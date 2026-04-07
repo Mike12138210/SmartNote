@@ -1,5 +1,6 @@
 package com.Mike12138210.SmartNote.service.impl;
 
+import com.Mike12138210.SmartNote.dto.NotePatchRequest;
 import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.entity.NoteHistory;
 import com.Mike12138210.SmartNote.mapper.NoteHistoryMapper;
@@ -89,5 +90,33 @@ public class NoteService {
         noteHistoryMapper.insert(history);
 
         return note;
+    }
+
+    // 编辑笔记
+    public Note patchNote(NotePatchRequest request){
+        Long currentUserId = getCurrentUserId();
+
+        Note note = noteMapper.selectById(request.getId());
+        if(note == null){
+            throw new RuntimeException("笔记不存在，请稍后重试");
+        }
+        if(!note.getUserId().equals(currentUserId)){
+            throw new RuntimeException("对不起，您无权编辑此笔记。");
+        }
+
+        if (request.getTitle() != null) {
+            note.setTitle(request.getTitle());
+        }
+        if (request.getContent() != null) {
+            note.setContent(request.getContent());
+        }
+        if (request.getTags() != null) {
+            note.setTags(request.getTags());
+        }
+
+        note.setUpdateTime(LocalDateTime.now()); // 自动填充未生效，手动修改更新时间
+        noteMapper.updateById(note);
+
+        return noteMapper.selectById(note.getId());
     }
 }

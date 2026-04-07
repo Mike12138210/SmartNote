@@ -1,8 +1,10 @@
 package com.Mike12138210.SmartNote.controller;
 
+import com.Mike12138210.SmartNote.dto.NotePatchRequest;
 import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.service.impl.NoteService;
 import com.Mike12138210.SmartNote.utils.Result;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,5 +35,12 @@ public class NoteController {
     public Result<Note> getNoteDetail(@PathVariable Long id){
         Note note = noteService.getNoteDetail(id);
         return Result.success(note);
+    }
+
+    // 编辑笔记
+    @PatchMapping
+    public Result<Note> patchNote(@Valid @RequestBody NotePatchRequest request){
+        Note updatedNote = noteService.patchNote(request);
+        return Result.success(updatedNote);
     }
 }
