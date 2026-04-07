@@ -12,12 +12,14 @@ public class NoteController {
     @Autowired
     public NoteService noteService;
 
+    // 新增笔记
     @PostMapping
     public Result<?> createNote(@RequestBody Note note){
         noteService.createNote(note);
         return Result.success(null);
     }
 
+    // 分页查询笔记
     @GetMapping
     public Result<?> list(@RequestParam(defaultValue = "1") int pageNum,
                           @RequestParam(defaultValue = "10") int pageSize,

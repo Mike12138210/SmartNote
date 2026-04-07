@@ -6,6 +6,7 @@ import com.Mike12138210.SmartNote.dto.UserInfoResponse;
 import com.Mike12138210.SmartNote.entity.User;
 import com.Mike12138210.SmartNote.mapper.UserMapper;
 import com.Mike12138210.SmartNote.utils.JwtUtil;
+import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -118,12 +119,18 @@ public class UserService {
     }
 
     // 修改个人资料
-    public void profileUpdate(Long userId, ProfileUpdateRequest request){
-        User user = new User();
-        user.setId(userId);
-        if(request.getNickname() != null){user.setNickname(request.getNickname());}
-        if(request.getAvatar() != null){user.setAvatar(request.getAvatar());}
-        if(request.getMotto() != null){user.setMotto(request.getMotto());}
+    public void updateProfile(Long userId, ProfileUpdateRequest request){
+        User user = userMapper.selectById(userId);
+
+        if(request.getNickname() != null && !request.getNickname().isEmpty()){
+            user.setNickname(request.getNickname());
+        }
+        if(request.getAvatar() != null && !request.getAvatar().isEmpty()){
+            user.setAvatar(request.getAvatar());
+        }
+        if(request.getMotto() != null && !request.getMotto().isEmpty()){
+            user.setMotto(request.getMotto());
+        }
         userMapper.updateById(user);
     }
 }
