@@ -1,6 +1,8 @@
 package com.Mike12138210.SmartNote.service.impl;
 
 import com.Mike12138210.SmartNote.entity.Note;
+import com.Mike12138210.SmartNote.entity.NoteHistory;
+import com.Mike12138210.SmartNote.mapper.NoteHistoryMapper;
 import com.Mike12138210.SmartNote.mapper.NoteMapper;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -9,12 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
 public class NoteService {
     @Autowired
     private NoteMapper noteMapper;
+    @Autowired
+    private NoteHistoryMapper noteHistoryMapper;
 
     // 获取当前登录用户的ID
     private Long getCurrentUserId(){
@@ -60,5 +65,29 @@ public class NoteService {
             }
         }
         return noteMapper.selectPage(page,wrapper); // 查询总数和当前页数据
+    }
+
+    // 查询笔记详情（同时记录浏览历史）
+    public Note getNoteDetail(Long noteId){
+        Long userId = getCurrentUserId();
+        if(userId == null){throw new RuntimeException("用户未登录，请稍后重试。");}
+
+        Note note = noteMapper.selectById(noteId);
+        if (note == null) {throw new RuntimeException("该笔记不存在，请重新输入。");}
+
+        if(!note.getUserId().equals(userId)){
+            if("仅自己可见".equals(note.getPermission())){
+                throw new RuntimeException("对不起，您无权查看此笔记。");
+            }
+            // if("仅好友可见".equals(note.getPermission())){}
+        }
+
+        NoteHistory history = new NoteHistory();
+        history.setUserId(userId);
+        history.setNoteId(noteId);
+        history.setViewTime(LocalDateTime.now());
+        noteHistoryMapper.insert(history);
+
+        return note;
     }
 }

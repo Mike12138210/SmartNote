@@ -27,4 +27,11 @@ public class NoteController {
                           @RequestParam(required = false) String tag){
         return Result.success(noteService.listUserNotes(pageNum,pageSize,title,tag));
     }
+
+    // 查看笔记
+    @GetMapping("/{id}")
+    public Result<Note> getNoteDetail(@PathVariable Long id){
+        Note note = noteService.getNoteDetail(id);
+        return Result.success(note);
+    }
 }
