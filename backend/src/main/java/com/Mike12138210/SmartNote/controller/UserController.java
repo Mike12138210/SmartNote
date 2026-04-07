@@ -1,10 +1,12 @@
 package com.Mike12138210.SmartNote.controller;
 
+import com.Mike12138210.SmartNote.dto.PasswordUpdateRequest;
 import com.Mike12138210.SmartNote.dto.ProfileUpdateRequest;
 import com.Mike12138210.SmartNote.dto.UserInfoResponse;
 import com.Mike12138210.SmartNote.service.impl.UserService;
 import com.Mike12138210.SmartNote.utils.Result;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,5 +47,13 @@ public class UserController {
             return null;
         }
         return ((Number)userId).longValue();
+    }
+
+    // 修改密码
+    @PutMapping("/me/password")
+    public Result<?> updatePassword(@Valid @RequestBody PasswordUpdateRequest request){
+        Long userId = getCurrentUserId();
+        userService.updatePassword(userId, request.getOldPassword(), request.getNewPassword());
+        return Result.success(null);
     }
 }

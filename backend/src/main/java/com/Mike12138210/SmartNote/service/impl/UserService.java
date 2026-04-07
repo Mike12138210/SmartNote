@@ -53,13 +53,13 @@ public class UserService {
 
         if(count > 0){
             if (isUsernameExist(username)) {
-                throw new RuntimeException("该用户名已存在，请重试");
+                throw new RuntimeException("该用户名已存在，请重新输入");
             }
             if (isEmailExist(email)) {
-                throw new RuntimeException("该邮箱已存在，请重试");
+                throw new RuntimeException("该邮箱已存在，请重新输入");
             }
             if (isPhoneExist(phone)) {
-                throw new RuntimeException("该手机号已存在，请重试");
+                throw new RuntimeException("该手机号已存在，请重新输入");
             }
         }
     }
@@ -114,7 +114,7 @@ public class UserService {
     // 获取当前用户信息（不含密码）
     public UserInfoResponse getUserInfo(Long userId){
         User user = userMapper.selectById(userId);
-        if(user == null){throw new RuntimeException("该用户不存在，请稍后重试");}
+        if(user == null){throw new RuntimeException("该用户不存在，请重新输入");}
         return new UserInfoResponse(user);
     }
 
@@ -131,6 +131,20 @@ public class UserService {
         if(request.getMotto() != null && !request.getMotto().isEmpty()){
             user.setMotto(request.getMotto());
         }
+        userMapper.updateById(user);
+    }
+
+    // 修改个人密码
+    public void updatePassword(Long userId,String oldPassword,String newPassword){
+        User user = userMapper.selectById(userId);
+        if(user == null){
+            throw new RuntimeException("该用户不存在，请重新输入");
+        }
+        if(!passwordEncoder.matches(oldPassword,user.getPassword())){
+            throw new RuntimeException("原密码错误，请重新输入");
+        }
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
         userMapper.updateById(user);
     }
 }
