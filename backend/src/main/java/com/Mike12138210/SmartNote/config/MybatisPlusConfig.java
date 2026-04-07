@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MybatisPlusConfig {
-    @Bean  // 将返回的对象注册为 Spring Bean，供框架使用
+    @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         // 创建 MyBatis-Plus 的拦截器容器（可以添加多个拦截器，比如分页、乐观锁等）
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();

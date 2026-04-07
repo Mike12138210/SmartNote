@@ -1,6 +1,8 @@
 package com.Mike12138210.SmartNote.service.impl;
 
 import com.Mike12138210.SmartNote.dto.LoginRequest;
+import com.Mike12138210.SmartNote.dto.ProfileUpdateRequest;
+import com.Mike12138210.SmartNote.dto.UserInfoResponse;
 import com.Mike12138210.SmartNote.entity.User;
 import com.Mike12138210.SmartNote.mapper.UserMapper;
 import com.Mike12138210.SmartNote.utils.JwtUtil;
@@ -36,6 +38,7 @@ public class UserService {
         userMapper.insert(user);
     }
 
+    // 唯一性检查
     private void checkUnique(String username,String email,String phone){
         LambdaQueryWrapper<User>wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername,username)
@@ -105,5 +108,22 @@ public class UserService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId",user.getId());
         return jwtUtil.genToken(claims);
+    }
+
+    // 获取当前用户信息（不含密码）
+    public UserInfoResponse getUserInfo(Long userId){
+        User user = userMapper.selectById(userId);
+        if(user == null){throw new RuntimeException("该用户不存在，请稍后重试");}
+        return new UserInfoResponse(user);
+    }
+
+    // 修改个人资料
+    public void profileUpdate(Long userId, ProfileUpdateRequest request){
+        User user = new User();
+        user.setId(userId);
+        if(request.getNickname() != null){user.setNickname(request.getNickname());}
+        if(request.getAvatar() != null){user.setAvatar(request.getAvatar());}
+        if(request.getMotto() != null){user.setMotto(request.getMotto());}
+        userMapper.updateById(user);
     }
 }

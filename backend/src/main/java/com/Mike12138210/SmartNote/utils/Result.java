@@ -3,7 +3,7 @@ package com.Mike12138210.SmartNote.utils;
 public class Result<T> {
     private Integer code;
     private String message;
-    private T data;
+    private T data;  // data的类型是T，T可以是任意类型
 
     private Result(Integer code, String message, T data) {
         this.code = code;
