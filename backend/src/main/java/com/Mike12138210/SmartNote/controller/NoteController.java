@@ -1,12 +1,16 @@
 package com.Mike12138210.SmartNote.controller;
 
 import com.Mike12138210.SmartNote.dto.NotePatchRequest;
+import com.Mike12138210.SmartNote.dto.NotePermissionRequest;
 import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.service.impl.NoteService;
 import com.Mike12138210.SmartNote.utils.Result;
+import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notes")
@@ -48,6 +52,13 @@ public class NoteController {
     @DeleteMapping("/{noteId}")
     public Result<?> deleteNote(@PathVariable Long noteId){
         noteService.deleteNote(noteId);
+        return Result.success(null);
+    }
+
+    // 修改笔记权限
+    @PutMapping("/{noteId}/permission")
+    public Result<?> updateNotePermission(@PathVariable Long noteId,@RequestBody @Valid NotePermissionRequest request){
+        noteService.updateNotePermission(noteId, request.getPermission());
         return Result.success(null);
     }
 }

@@ -32,7 +32,13 @@ public class LoginInterceptor implements HandlerInterceptor {
             response.setStatus(401);
             return false;
         }
-        ThreadLocalUtil.set(claims);
+        Object userIdObj = claims.get("userId");
+        if(userIdObj == null){
+            response.setStatus(401);
+            return false;
+        }
+        Long userId = ((Number)userIdObj).longValue();
+        ThreadLocalUtil.set(userId);
         return true;
     }
 

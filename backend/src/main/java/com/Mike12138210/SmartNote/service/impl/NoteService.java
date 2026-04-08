@@ -1,6 +1,7 @@
 package com.Mike12138210.SmartNote.service.impl;
 
 import com.Mike12138210.SmartNote.dto.NotePatchRequest;
+import com.Mike12138210.SmartNote.dto.NotePermissionRequest;
 import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.entity.NoteHistory;
 import com.Mike12138210.SmartNote.mapper.NoteHistoryMapper;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Map;
 
 @Service
@@ -22,22 +24,9 @@ public class NoteService {
     @Autowired
     private NoteHistoryMapper noteHistoryMapper;
 
-    // 获取当前登录用户的ID
-    private Long getCurrentUserId(){
-        Map<String, Object> claims = ThreadLocalUtil.get();
-        if(claims == null){
-            return null;
-        }
-        Object userId = claims.get("userId");
-        if(userId == null){
-            return null;
-        }
-        return ((Number)userId).longValue();
-    }
-
     // 新增笔记
     public void createNote(Note note){
-        Long userId = getCurrentUserId();
+        Long userId = ThreadLocalUtil.get();
         if(userId  == null){throw new RuntimeException("用户未登录，请稍后重试");}
 
         note.setUserId(userId);
@@ -47,7 +36,7 @@ public class NoteService {
 
     // 分页查询当前用户笔记
     public Page<Note> listUserNotes(int pageNum,int pageSize,String title,String tag){
-        Long userId = getCurrentUserId();
+        Long userId = ThreadLocalUtil.get();
         if(userId  == null){throw new RuntimeException("用户未登录，请稍后重试");}
 
         Page<Note> page = new Page<>(pageNum,pageSize);
@@ -70,7 +59,7 @@ public class NoteService {
 
     // 查询笔记详情（同时记录浏览历史）
     public Note getNoteDetail(Long noteId){
-        Long userId = getCurrentUserId();
+        Long userId = ThreadLocalUtil.get();
         if(userId == null){throw new RuntimeException("用户未登录，请稍后重试。");}
 
         Note note = noteMapper.selectById(noteId);
@@ -94,13 +83,13 @@ public class NoteService {
 
     // 编辑笔记
     public Note patchNote(NotePatchRequest request){
-        Long userId = getCurrentUserId();
+        Long currentUserId = ThreadLocalUtil.get();
 
         Note note = noteMapper.selectById(request.getNoteId());
         if(note == null){
             throw new RuntimeException("笔记不存在，请稍后重试");
         }
-        if(!note.getUserId().equals(userId)){
+        if(!note.getUserId().equals(currentUserId)){
             throw new RuntimeException("对不起，您无权编辑此笔记。");
         }
 
@@ -120,10 +109,11 @@ public class NoteService {
         return noteMapper.selectById(note.getNoteId());
     }
 
+    // 删除笔记
     public void deleteNote(Long noteId){
-        Long userId = getCurrentUserId();
+        Long userId = ThreadLocalUtil.get();
         if(userId == null){
-            throw new RuntimeException("未登录。");
+            throw new RuntimeException("用户未登录，请稍后重试。");
         }
 
         Note note = noteMapper.selectById(userId);
@@ -138,5 +128,26 @@ public class NoteService {
         if(row == 0){
             throw new RuntimeException("删除失败，请重试。");
         }
+    }
+
+    // 修改笔记权限
+    public void updateNotePermission(Long noteId,String permission){
+        Long userId = ThreadLocalUtil.get();
+        if(userId == null){
+            throw new RuntimeException("用户未登录，请稍后重试");
+        }
+
+        Note note = noteMapper.selectById(noteId);
+        if(note == null){
+            throw new RuntimeException("笔记不存在，请稍后重试。");
+        }
+        if(!note.getUserId().equals(userId)){
+            throw new RuntimeException("对不起，您无权修改此笔记的权限");
+        }
+        if(!Arrays.asList("仅自己可见","仅好友可见","所有人可见").contains(permission)){
+            throw new RuntimeException("权限值无效，必须是’仅自己可见‘’仅好友可见‘或’所有人可见‘");
+        }
+        note.setPermission(permission);
+        noteMapper.updateById(note);
     }
 }
