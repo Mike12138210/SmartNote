@@ -74,7 +74,7 @@ public class NoteService {
         if(userId == null){throw new RuntimeException("用户未登录，请稍后重试。");}
 
         Note note = noteMapper.selectById(noteId);
-        if (note == null) {throw new RuntimeException("该笔记不存在，请重新输入。");}
+        if (note == null) {throw new RuntimeException("该笔记不存在或已被删除，请重试。");}
 
         if(!note.getUserId().equals(userId)){
             if("仅自己可见".equals(note.getPermission())){
@@ -94,13 +94,13 @@ public class NoteService {
 
     // 编辑笔记
     public Note patchNote(NotePatchRequest request){
-        Long currentUserId = getCurrentUserId();
+        Long userId = getCurrentUserId();
 
-        Note note = noteMapper.selectById(request.getId());
+        Note note = noteMapper.selectById(request.getNoteId());
         if(note == null){
             throw new RuntimeException("笔记不存在，请稍后重试");
         }
-        if(!note.getUserId().equals(currentUserId)){
+        if(!note.getUserId().equals(userId)){
             throw new RuntimeException("对不起，您无权编辑此笔记。");
         }
 
@@ -117,6 +117,26 @@ public class NoteService {
         note.setUpdateTime(LocalDateTime.now()); // 自动填充未生效，手动修改更新时间
         noteMapper.updateById(note);
 
-        return noteMapper.selectById(note.getId());
+        return noteMapper.selectById(note.getNoteId());
+    }
+
+    public void deleteNote(Long noteId){
+        Long userId = getCurrentUserId();
+        if(userId == null){
+            throw new RuntimeException("未登录。");
+        }
+
+        Note note = noteMapper.selectById(userId);
+        if(note == null){
+            throw new RuntimeException("笔记不存在或已被删除，请稍后重试。");
+        }
+        if(!note.getUserId().equals(userId)){
+            throw new RuntimeException("对不起，您无权删除此笔记。");
+        }
+
+        int row = noteMapper.deleteById(noteId);
+        if(row == 0){
+            throw new RuntimeException("删除失败，请重试。");
+        }
     }
 }

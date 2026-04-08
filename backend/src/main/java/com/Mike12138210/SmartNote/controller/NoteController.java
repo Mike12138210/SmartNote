@@ -31,9 +31,9 @@ public class NoteController {
     }
 
     // 查看笔记
-    @GetMapping("/{id}")
-    public Result<Note> getNoteDetail(@PathVariable Long id){
-        Note note = noteService.getNoteDetail(id);
+    @GetMapping("/{noteId}")
+    public Result<Note> getNoteDetail(@PathVariable Long noteId){
+        Note note = noteService.getNoteDetail(noteId);
         return Result.success(note);
     }
 
@@ -42,5 +42,12 @@ public class NoteController {
     public Result<Note> patchNote(@Valid @RequestBody NotePatchRequest request){
         Note updatedNote = noteService.patchNote(request);
         return Result.success(updatedNote);
+    }
+
+    // 删除笔记
+    @DeleteMapping("/{noteId}")
+    public Result<?> deleteNote(@PathVariable Long noteId){
+        noteService.deleteNote(noteId);
+        return Result.success(null);
     }
 }

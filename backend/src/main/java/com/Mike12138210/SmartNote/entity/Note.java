@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 
 @TableName("note")
 public class Note {
-    // id,userId,title,content,tags,permission,aiSummary,aiKeyPoints,createTime,updateTime
-    @TableId(type = IdType.AUTO)
-    private Long id;
+    // noteId,userId,title,content,tags,permission,aiSummary,aiKeyPoints,createTime,updateTime
+    @TableId(value = "note_id", type = IdType.AUTO)
+    private Long noteId;
     private Long userId;
     private String title;
     private String content; // markdown
@@ -23,9 +23,9 @@ public class Note {
     @TableLogic
     private Integer deleted;
 
-    public Long getId() {return id;}
+    public Long getNoteId() {return noteId;}
 
-    public void setId(Long id) {this.id = id;}
+    public void setNoteId(Long noteId) {this.noteId = noteId;}
 
     public Long getUserId() {return userId;}
 

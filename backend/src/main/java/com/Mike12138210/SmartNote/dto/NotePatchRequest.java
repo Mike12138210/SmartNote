@@ -4,17 +4,17 @@ import jakarta.validation.constraints.NotNull;
 
 public class NotePatchRequest {
     @NotNull(message = "笔记ID不能为空")
-    private Long id;
+    private Long noteId;
     private String title;
     private String content;
     private String tags; // 可选
 
-    public Long getId() {
-        return id;
+    public Long getNoteId() {
+        return noteId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setNoteId(Long noteId) {
+        this.noteId = noteId;
     }
 
     public String getTitle() {
