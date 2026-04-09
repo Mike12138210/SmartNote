@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class NoteService {
@@ -81,7 +81,62 @@ public class NoteService {
         return note;
     }
 
+    // 生成浏览历史
+    public List<Note> getRecentHistory(int limit) {
+        Long currentUserId = ThreadLocalUtil.get();
+        if(currentUserId == null){
+            throw new RuntimeException("用户未登录，请稍后重试。");
+        }
+
+        // 查询该用户浏览历史，按时间倒序，限制条数
+        LambdaQueryWrapper<NoteHistory> historyWrapper = new LambdaQueryWrapper<>();
+        historyWrapper.eq(NoteHistory::getUserId,currentUserId)
+                .orderByDesc(NoteHistory::getViewTime)
+                .last(" LIMIT " + limit);
+        List<NoteHistory> histories = noteHistoryMapper.selectList(historyWrapper);
+
+        // 如果没有历史记录，直接返回空列表
+        if(histories.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        // 收集所有浏览过的笔记的ID
+        List<Long> noteIds = new ArrayList<>();
+        for(NoteHistory h : histories){
+            noteIds.add(h.getNoteId());
+        }
+
+        // 根据ID批量查询笔记
+        LambdaQueryWrapper<Note> noteWrapper = new LambdaQueryWrapper<>();
+        noteWrapper.in(Note::getNoteId,noteIds);
+        List<Note> notes = noteMapper.selectList(noteWrapper);
+
+        //将笔记列表转换成Map，方便按ID快速查找
+        Map<Long, Note> noteMap = new HashMap<>();
+        for(Note n : notes){
+            noteMap.put(n.getNoteId(),n);
+        }
+
+        // 根据笔记ID构造最终返回的笔记列表
+        List<Note> result = new ArrayList<>();
+        for(NoteHistory h : histories){
+            Note note = noteMap.get(h.getNoteId());
+            if(note == null){ // 笔记可能已被删除
+                continue;
+            }
+            if(note.getDeleted() != null && note.getDeleted() == 1){
+                continue;
+            }
+            if(note.getUserId().equals(currentUserId) || "所有人可见" .equals(note.getPermission())){ // 权限过滤
+                result.add(note);
+            }
+        }
+
+        return result;
+    }
+
     // 编辑笔记
+
     public Note patchNote(NotePatchRequest request){
         Long currentUserId = ThreadLocalUtil.get();
 
@@ -108,8 +163,8 @@ public class NoteService {
 
         return noteMapper.selectById(note.getNoteId());
     }
-
     // 删除笔记
+
     public void deleteNote(Long noteId){
         Long userId = ThreadLocalUtil.get();
         if(userId == null){
@@ -129,8 +184,8 @@ public class NoteService {
             throw new RuntimeException("删除失败，请重试。");
         }
     }
-
     // 修改笔记权限
+
     public void updateNotePermission(Long noteId,String permission){
         Long userId = ThreadLocalUtil.get();
         if(userId == null){

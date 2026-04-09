@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -39,6 +40,13 @@ public class NoteController {
     public Result<Note> getNoteDetail(@PathVariable Long noteId){
         Note note = noteService.getNoteDetail(noteId);
         return Result.success(note);
+    }
+
+    // 查看浏览记录
+    @GetMapping("/history/recent")
+    public Result<List<Note>> getRecentHistory(@RequestParam(defaultValue = "10")int limit){
+        List<Note> recentNote = noteService.getRecentHistory(limit);
+        return Result.success(recentNote);
     }
 
     // 编辑笔记
