@@ -2,10 +2,10 @@ package com.Mike12138210.SmartNote.controller;
 
 import com.Mike12138210.SmartNote.dto.PasswordUpdateRequest;
 import com.Mike12138210.SmartNote.dto.ProfileUpdateRequest;
-import com.Mike12138210.SmartNote.dto.UserInfoResponse;
 import com.Mike12138210.SmartNote.service.impl.UserService;
 import com.Mike12138210.SmartNote.utils.Result;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import com.Mike12138210.SmartNote.vo.UserInfoVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +20,11 @@ public class UserController {
 
     // 获取当前登录用户信息
     @GetMapping("/me")
-    private Result<UserInfoResponse> getCurrentUser(){
+    private Result<UserInfoVO> getCurrentUser(){
         Map<String, Object> claims = ThreadLocalUtil.get();
         Long userId = ((Number)claims.get("userId")).longValue();
 
-        UserInfoResponse userInfo = userService.getUserInfo(userId);
+        UserInfoVO userInfo = userService.getUserInfo(userId);
         return Result.success(userInfo);
     }
 

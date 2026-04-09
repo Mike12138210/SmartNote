@@ -2,11 +2,10 @@ package com.Mike12138210.SmartNote.service.impl;
 
 import com.Mike12138210.SmartNote.dto.LoginRequest;
 import com.Mike12138210.SmartNote.dto.ProfileUpdateRequest;
-import com.Mike12138210.SmartNote.dto.UserInfoResponse;
 import com.Mike12138210.SmartNote.entity.User;
 import com.Mike12138210.SmartNote.mapper.UserMapper;
 import com.Mike12138210.SmartNote.utils.JwtUtil;
-import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import com.Mike12138210.SmartNote.vo.UserInfoVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -112,10 +111,10 @@ public class UserService {
     }
 
     // 获取当前用户信息（不含密码）
-    public UserInfoResponse getUserInfo(Long userId){
+    public UserInfoVO getUserInfo(Long userId){
         User user = userMapper.selectById(userId);
         if(user == null){throw new RuntimeException("该用户不存在，请重新输入");}
-        return new UserInfoResponse(user);
+        return new UserInfoVO(user);
     }
 
     // 修改个人资料

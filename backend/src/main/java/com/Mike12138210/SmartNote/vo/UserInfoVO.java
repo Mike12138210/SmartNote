@@ -1,8 +1,10 @@
-package com.Mike12138210.SmartNote.dto;
+package com.Mike12138210.SmartNote.vo;
 
 import com.Mike12138210.SmartNote.entity.User;
 
-public class UserInfoResponse {
+import java.time.LocalDateTime;
+
+public class UserInfoVO {
     private Long id;
     private String username;
     private String nickname;
@@ -10,8 +12,9 @@ public class UserInfoResponse {
     private String phone;
     private String avatar;
     private String motto;
+    private LocalDateTime createTime;
 
-    public UserInfoResponse(User user) {
+    public UserInfoVO(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.nickname = user.getNickname();
@@ -19,6 +22,7 @@ public class UserInfoResponse {
         this.phone = user.getPhone();
         this.avatar = user.getAvatar();
         this.motto = user.getMotto();
+        this.createTime = user.getCreateTime();
     }
 
     public Long getId(){return id;}
@@ -48,4 +52,8 @@ public class UserInfoResponse {
     public void setAvatar(String avatar) {this.avatar = avatar;}
 
     public void setMotto(String motto) {this.motto = motto;}
+
+    public LocalDateTime getCreateTime() {return createTime;}
+
+    public void setCreateTime(LocalDateTime createTime) {this.createTime = createTime;}
 }
