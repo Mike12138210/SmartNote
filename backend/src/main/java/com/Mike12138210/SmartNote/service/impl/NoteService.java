@@ -81,7 +81,7 @@ public class NoteService {
         return note;
     }
 
-    // 生成浏览历史
+    // 查看浏览历史
     public List<Note> getRecentHistory(int limit) {
         Long currentUserId = ThreadLocalUtil.get();
         if(currentUserId == null){
@@ -136,7 +136,6 @@ public class NoteService {
     }
 
     // 编辑笔记
-
     public Note patchNote(NotePatchRequest request){
         Long currentUserId = ThreadLocalUtil.get();
 
@@ -163,8 +162,8 @@ public class NoteService {
 
         return noteMapper.selectById(note.getNoteId());
     }
-    // 删除笔记
 
+    // 删除笔记
     public void deleteNote(Long noteId){
         Long userId = ThreadLocalUtil.get();
         if(userId == null){
@@ -184,8 +183,8 @@ public class NoteService {
             throw new RuntimeException("删除失败，请重试。");
         }
     }
-    // 修改笔记权限
 
+    // 修改笔记权限
     public void updateNotePermission(Long noteId,String permission){
         Long userId = ThreadLocalUtil.get();
         if(userId == null){
@@ -204,5 +203,17 @@ public class NoteService {
         }
         note.setPermission(permission);
         noteMapper.updateById(note);
+    }
+
+    // 查询公开笔记
+    public Note getPublicNote(Long noteId){
+        Note note = noteMapper.selectById(noteId);
+        if (note == null || note.getDeleted() == 1) {
+            throw new RuntimeException("该笔记不存在或已被删除，请重试。");
+        }
+        if(!"所有人可见".equals(note.getPermission())){
+            throw new RuntimeException("该笔记未公开，无法访问。");
+        }
+        return note;
     }
 }
