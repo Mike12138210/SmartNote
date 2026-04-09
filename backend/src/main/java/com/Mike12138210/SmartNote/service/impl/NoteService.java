@@ -2,6 +2,7 @@ package com.Mike12138210.SmartNote.service.impl;
 
 import com.Mike12138210.SmartNote.dto.NotePatchRequest;
 import com.Mike12138210.SmartNote.dto.NotePermissionRequest;
+import com.Mike12138210.SmartNote.entity.Friend;
 import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.entity.NoteHistory;
 import com.Mike12138210.SmartNote.mapper.NoteHistoryMapper;
@@ -15,7 +16,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class NoteService {
@@ -23,6 +23,8 @@ public class NoteService {
     private NoteMapper noteMapper;
     @Autowired
     private NoteHistoryMapper noteHistoryMapper;
+    @Autowired
+    private FriendService friendService;
 
     // 新增笔记
     public void createNote(Note note){
@@ -66,10 +68,14 @@ public class NoteService {
         if (note == null) {throw new RuntimeException("该笔记不存在或已被删除，请重试。");}
 
         if(!note.getUserId().equals(userId)){
-            if("仅自己可见".equals(note.getPermission())){
+            String permission = note.getPermission();
+            if("仅自己可见".equals(permission)){
                 throw new RuntimeException("对不起，您无权查看此笔记。");
+            }else if("仅好友可见".equals(permission)){
+                if(!friendService.isFriend(userId,note.getUserId())){
+                    throw new RuntimeException("对不起，您无权查看此笔记。");
+                }
             }
-            // if("仅好友可见".equals(note.getPermission())){}
         }
 
         NoteHistory history = new NoteHistory();
@@ -78,6 +84,18 @@ public class NoteService {
         history.setViewTime(LocalDateTime.now());
         noteHistoryMapper.insert(history);
 
+        return note;
+    }
+
+    // 查询公开笔记
+    public Note getPublicNote(Long noteId){
+        Note note = noteMapper.selectById(noteId);
+        if (note == null || note.getDeleted() == 1) {
+            throw new RuntimeException("该笔记不存在或已被删除，请重试。");
+        }
+        if(!"所有人可见".equals(note.getPermission())){
+            throw new RuntimeException("该笔记未公开，无法访问。");
+        }
         return note;
     }
 
@@ -203,17 +221,5 @@ public class NoteService {
         }
         note.setPermission(permission);
         noteMapper.updateById(note);
-    }
-
-    // 查询公开笔记
-    public Note getPublicNote(Long noteId){
-        Note note = noteMapper.selectById(noteId);
-        if (note == null || note.getDeleted() == 1) {
-            throw new RuntimeException("该笔记不存在或已被删除，请重试。");
-        }
-        if(!"所有人可见".equals(note.getPermission())){
-            throw new RuntimeException("该笔记未公开，无法访问。");
-        }
-        return note;
     }
 }
