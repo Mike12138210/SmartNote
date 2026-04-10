@@ -11,7 +11,7 @@ public class FriendApply {
     private Long id;
     private Long fromUserId;
     private Long toUserId;
-    private String status; // 0 - 待处理，1 -同意，2 - 拒绝
+    private int status; // 0 - 待处理，1 -同意，2 - 拒绝
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime applyTime;
 
@@ -39,11 +39,11 @@ public class FriendApply {
         this.toUserId = toUserId;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 

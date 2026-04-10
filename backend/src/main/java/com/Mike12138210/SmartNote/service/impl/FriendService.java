@@ -1,6 +1,7 @@
 package com.Mike12138210.SmartNote.service.impl;
 
 import com.Mike12138210.SmartNote.entity.Friend;
+import com.Mike12138210.SmartNote.entity.FriendApply;
 import com.Mike12138210.SmartNote.entity.User;
 import com.Mike12138210.SmartNote.mapper.FriendApplyMapper;
 import com.Mike12138210.SmartNote.mapper.FriendMapper;
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,5 +59,33 @@ public class FriendService {
         return users.stream()
                 .map(UserSearchVO::new)
                 .collect(Collectors.toList());
+    }
+
+    // 发送好友申请
+    public UserSearchVO sendFriendApply(Long fromUserId,Long toUserId){
+        User targetUser = userMapper.selectById(toUserId);
+        if(targetUser == null || targetUser.getDeleted() == 1){
+            throw new RuntimeException("对不起，该用户不存在或已注销");
+        }
+        if(fromUserId.equals(toUserId)){
+            throw new RuntimeException("抱歉，您不能添加自己为好友。");
+        }
+        if(isFriend(fromUserId,toUserId)){
+            return new UserSearchVO(targetUser);
+        }
+        LambdaQueryWrapper<FriendApply> friendApplyWrapper = new LambdaQueryWrapper<>();
+        friendApplyWrapper.eq(FriendApply::getFromUserId,fromUserId)
+                .eq(FriendApply::getToUserId,toUserId)
+                .eq(FriendApply::getStatus,0);
+        if(friendApplyMapper.selectCount(friendApplyWrapper) > 0){
+            throw new RuntimeException("您已发送过好友申请，请等待对方处理");
+        }
+        FriendApply apply = new FriendApply();
+        apply.setFromUserId(fromUserId);
+        apply.setToUserId(toUserId);
+        apply.setStatus(0);
+        apply.setApplyTime(LocalDateTime.now());
+        friendApplyMapper.insert(apply);
+        return null;
     }
 }
