@@ -3,6 +3,7 @@ package com.Mike12138210.SmartNote.controller;
 import com.Mike12138210.SmartNote.dto.FriendApplyRequest;
 import com.Mike12138210.SmartNote.service.impl.FriendService;
 import com.Mike12138210.SmartNote.utils.Result;
+import com.Mike12138210.SmartNote.vo.PendingApplyVO;
 import com.Mike12138210.SmartNote.vo.UserSearchVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class FriendController {
     }
 
     // 发送好友申请
-    @PostMapping("request")
+    @PostMapping("/request")
     public Result<UserSearchVO> sendFriendApply(@Valid @RequestBody FriendApplyRequest request){
         Long currentUsrId = friendService.getCurrentUserId();
         UserSearchVO result = friendService.sendFriendApply(currentUsrId,request.getFriendId());
@@ -32,5 +33,13 @@ public class FriendController {
         }else{
             return Result.success("好友申请发送成功，请等待对方同意。",null);
         }
+    }
+
+    // 查看好友申请
+    @GetMapping("/requests/pending")
+    public Result<List<PendingApplyVO>> getPendingApplications(){
+        Long userId = friendService.getCurrentUserId();
+        List<PendingApplyVO> list = friendService.getPendingApplications(userId);
+        return Result.success(list);
     }
 }

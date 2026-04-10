@@ -7,12 +7,14 @@ import com.Mike12138210.SmartNote.mapper.FriendApplyMapper;
 import com.Mike12138210.SmartNote.mapper.FriendMapper;
 import com.Mike12138210.SmartNote.mapper.UserMapper;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import com.Mike12138210.SmartNote.vo.PendingApplyVO;
 import com.Mike12138210.SmartNote.vo.UserSearchVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,11 +52,20 @@ public class FriendService {
 
     // 搜索用户
     public List<UserSearchVO> searchUsers(String keyword,Long currentUserId){
+        if(keyword == null || keyword.trim().isEmpty()){
+            return new ArrayList<>();
+        }
+
         LambdaQueryWrapper<User> userWrapper = new LambdaQueryWrapper<>();
-        userWrapper.eq(User::getPhone,keyword)
+        // WHERE (phone = ? OR email = ? OR username LIKE ?) AND id != ?
+        userWrapper.and(wrapper -> wrapper
+                .eq(User::getPhone,keyword)
                 .or()
                 .eq(User::getEmail,keyword)
-                .ne(User::getId,currentUserId); // 默认与前面的条件用AND连接，WHERE (phone = ? OR email = ?) AND id != ?
+                .or()
+                .like(User::getUsername,keyword)
+        );
+        userWrapper.ne(User::getId,currentUserId);
         List<User> users = userMapper.selectList(userWrapper);
         return users.stream()
                 .map(UserSearchVO::new)
@@ -87,5 +98,30 @@ public class FriendService {
         apply.setApplyTime(LocalDateTime.now());
         friendApplyMapper.insert(apply);
         return null;
+    }
+
+    // 查看好友申请
+    public List<PendingApplyVO> getPendingApplications(Long userId){
+        LambdaQueryWrapper<FriendApply> applicationsWrapper = new LambdaQueryWrapper<>();
+        applicationsWrapper.eq(FriendApply::getToUserId,userId)
+                .eq(FriendApply::getStatus,0)
+                .orderByDesc(FriendApply::getApplyTime);
+        List<FriendApply> applies = friendApplyMapper.selectList(applicationsWrapper);
+
+        List<PendingApplyVO> result = new ArrayList<>();
+        for(FriendApply apply : applies){
+            User fromUser = userMapper.selectById(apply.getFromUserId());
+            if(fromUser != null && fromUser.getDeleted() == 0){
+                PendingApplyVO vo = new PendingApplyVO();
+                vo.setApplyId(apply.getId());
+                vo.setFromUserId(apply.getFromUserId());
+                vo.setUsername(fromUser.getUsername());
+                vo.setAvatar(fromUser.getAvatar());
+                vo.setMotto(fromUser.getMotto());
+                vo.setApplyTime(apply.getApplyTime());
+                result.add(vo);
+            }
+        }
+        return result;
     }
 }

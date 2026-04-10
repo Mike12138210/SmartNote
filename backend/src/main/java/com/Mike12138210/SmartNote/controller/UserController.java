@@ -33,7 +33,7 @@ public class UserController {
     private Result<?> updateProfile(@RequestBody ProfileUpdateRequest request){
         Long userId = getCurrentUserId();
         userService.updateProfile(userId,request);
-        return Result.success(null);
+        return Result.success("修改成功",null);
     }
 
     // 获取当前登录用户的ID
@@ -54,6 +54,6 @@ public class UserController {
     public Result<?> updatePassword(@Valid @RequestBody PasswordUpdateRequest request){
         Long userId = getCurrentUserId();
         userService.updatePassword(userId, request.getOldPassword(), request.getNewPassword());
-        return Result.success(null);
+        return Result.success("修改成功",null);
     }
 }

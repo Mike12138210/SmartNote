@@ -34,7 +34,7 @@ public class AuthorController {
 
         try {
             userService.register(user);
-            return Result.success(null);
+            return Result.success("注册成功，希望您使用愉快!",null);
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
@@ -46,6 +46,6 @@ public class AuthorController {
         String token = userService.login(request);
         Map<String, String> data = new HashMap<>();
         data.put("token",token);
-        return Result.success(data);
+        return Result.success("登录成功，祝您使用愉快!",data);
     }
 }
