@@ -22,7 +22,7 @@ public class User {
 
     @TableField(fill = FieldFill.INSERT) // 插入时自动填充（配合自动填充处理器）
     private LocalDateTime createTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE) // 插入和更新时自动填充
+    @TableField(fill = FieldFill.INSERT,update = "now()") //插入时填充，更新时使用数据库 now() 函数
     private LocalDateTime updateTime;
 
     @TableLogic // 逻辑删除注解，MyBatis-Plus 会自动在查询条件中加入 `deleted=0`

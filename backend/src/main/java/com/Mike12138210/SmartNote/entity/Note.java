@@ -18,7 +18,7 @@ public class Note {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(update = "now()")
     private LocalDateTime updateTime;
     @TableLogic
     private Integer deleted;

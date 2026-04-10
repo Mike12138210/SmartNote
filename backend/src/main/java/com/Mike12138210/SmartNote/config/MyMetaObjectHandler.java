@@ -17,7 +17,6 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        // 强制覆盖,每次更新都把 updateTime 设为当前时间
-        this.fillStrategy(metaObject, "updateTime", LocalDateTime.now());
+
     }
 }

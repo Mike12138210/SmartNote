@@ -33,20 +33,16 @@ public class UserController {
     private Result<?> updateProfile(@RequestBody ProfileUpdateRequest request){
         Long userId = getCurrentUserId();
         userService.updateProfile(userId,request);
-        return Result.success("修改成功",null);
+        return Result.success("个人资料修改成功",null);
     }
 
-    // 获取当前登录用户的ID
-    private Long getCurrentUserId(){
-        Map<String, Object> claims = ThreadLocalUtil.get();
-        if(claims == null){
-            return null;
+    // 获取当前用户的Id
+    public Long getCurrentUserId() {
+        Long userId = ThreadLocalUtil.get();
+        if (userId == null) {
+            throw new RuntimeException("用户未登录，请重试。");
         }
-        Object userId = claims.get("userId");
-        if(userId == null){
-            return null;
-        }
-        return ((Number)userId).longValue();
+        return userId;
     }
 
     // 修改密码
@@ -54,6 +50,6 @@ public class UserController {
     public Result<?> updatePassword(@Valid @RequestBody PasswordUpdateRequest request){
         Long userId = getCurrentUserId();
         userService.updatePassword(userId, request.getOldPassword(), request.getNewPassword());
-        return Result.success("修改成功",null);
+        return Result.success("密码修改成功",null);
     }
 }

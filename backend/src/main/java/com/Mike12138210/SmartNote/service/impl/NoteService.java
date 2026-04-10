@@ -174,8 +174,6 @@ public class NoteService {
         if (request.getTags() != null) {
             note.setTags(request.getTags());
         }
-
-        note.setUpdateTime(LocalDateTime.now()); // 自动填充未生效，手动修改更新时间
         noteMapper.updateById(note);
 
         return noteMapper.selectById(note.getNoteId());
