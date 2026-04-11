@@ -62,18 +62,18 @@ public class NoteService {
     // 查询笔记详情（同时记录浏览历史）
     public Note getNoteDetail(Long noteId){
         Long userId = ThreadLocalUtil.get();
-        if(userId == null){throw new RuntimeException("用户未登录，请稍后重试。");}
+        if(userId == null){throw new RuntimeException("用户未登录，请稍后重试");}
 
         Note note = noteMapper.selectById(noteId);
-        if (note == null) {throw new RuntimeException("该笔记不存在或已被删除，请重试。");}
+        if (note == null) {throw new RuntimeException("该笔记不存在或已被删除，请重试");}
 
         if(!note.getUserId().equals(userId)){
             String permission = note.getPermission();
             if("仅自己可见".equals(permission)){
-                throw new RuntimeException("对不起，您无权查看此笔记。");
+                throw new RuntimeException("对不起，您无权查看此笔记");
             }else if("仅好友可见".equals(permission)){
                 if(!friendService.isFriend(userId,note.getUserId())){
-                    throw new RuntimeException("对不起，您无权查看此笔记。");
+                    throw new RuntimeException("对不起，您无权查看此笔记");
                 }
             }
         }
@@ -91,10 +91,10 @@ public class NoteService {
     public Note getPublicNote(Long noteId){
         Note note = noteMapper.selectById(noteId);
         if (note == null || note.getDeleted() == 1) {
-            throw new RuntimeException("该笔记不存在或已被删除，请重试。");
+            throw new RuntimeException("该笔记不存在或已被删除，请重试");
         }
         if(!"所有人可见".equals(note.getPermission())){
-            throw new RuntimeException("该笔记未公开，无法访问。");
+            throw new RuntimeException("该笔记未公开，无法访问");
         }
         return note;
     }
@@ -103,7 +103,7 @@ public class NoteService {
     public List<Note> getRecentHistory(int limit) {
         Long currentUserId = ThreadLocalUtil.get();
         if(currentUserId == null){
-            throw new RuntimeException("用户未登录，请稍后重试。");
+            throw new RuntimeException("用户未登录，请稍后重试");
         }
 
         // 查询该用户浏览历史，按时间倒序，限制条数
@@ -162,7 +162,7 @@ public class NoteService {
             throw new RuntimeException("笔记不存在，请稍后重试");
         }
         if(!note.getUserId().equals(currentUserId)){
-            throw new RuntimeException("对不起，您无权编辑此笔记。");
+            throw new RuntimeException("对不起，您无权编辑此笔记");
         }
 
         if (request.getTitle() != null) {
@@ -183,20 +183,20 @@ public class NoteService {
     public void deleteNote(Long noteId){
         Long userId = ThreadLocalUtil.get();
         if(userId == null){
-            throw new RuntimeException("用户未登录，请稍后重试。");
+            throw new RuntimeException("用户未登录，请稍后重试");
         }
 
         Note note = noteMapper.selectById(userId);
         if(note == null){
-            throw new RuntimeException("笔记不存在或已被删除，请稍后重试。");
+            throw new RuntimeException("笔记不存在或已被删除，请稍后重试");
         }
         if(!note.getUserId().equals(userId)){
-            throw new RuntimeException("对不起，您无权删除此笔记。");
+            throw new RuntimeException("对不起，您无权删除此笔记");
         }
 
         int row = noteMapper.deleteById(noteId);
         if(row == 0){
-            throw new RuntimeException("删除失败，请重试。");
+            throw new RuntimeException("删除失败，请重试");
         }
     }
 
@@ -209,7 +209,7 @@ public class NoteService {
 
         Note note = noteMapper.selectById(noteId);
         if(note == null){
-            throw new RuntimeException("笔记不存在，请稍后重试。");
+            throw new RuntimeException("笔记不存在，请稍后重试");
         }
         if(!note.getUserId().equals(userId)){
             throw new RuntimeException("对不起，您无权修改此笔记的权限");

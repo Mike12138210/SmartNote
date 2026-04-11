@@ -12,6 +12,7 @@ import com.Mike12138210.SmartNote.vo.UserSearchVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class FriendService {
     public Long getCurrentUserId() {
         Long userId = ThreadLocalUtil.get();
         if (userId == null) {
-            throw new RuntimeException("用户未登录，请重试。");
+            throw new RuntimeException("用户未登录，请重试");
         }
         return userId;
     }
@@ -79,7 +80,7 @@ public class FriendService {
             throw new RuntimeException("对不起，该用户不存在或已注销");
         }
         if(fromUserId.equals(toUserId)){
-            throw new RuntimeException("抱歉，您不能添加自己为好友。");
+            throw new RuntimeException("抱歉，您不能添加自己为好友");
         }
         if(isFriend(fromUserId,toUserId)){
             return new UserSearchVO(targetUser);
@@ -123,5 +124,54 @@ public class FriendService {
             }
         }
         return result;
+    }
+
+    // 同意好友申请
+    @Transactional
+    public void approveApply(Long applyId,Long currentUsrId){
+        FriendApply apply = friendApplyMapper.selectById(applyId);
+        if (apply == null) {
+            throw new RuntimeException("对不起，该申请记录不存在");
+        }
+        if (apply.getStatus() != 0) {
+            throw new RuntimeException("该申请已处理");
+        }
+        if (!apply.getToUserId().equals(currentUsrId)) {
+            throw new RuntimeException("抱歉，您无权处理该申请");
+        }
+
+        User fromUser = userMapper.selectById(apply.getFromUserId());
+        if(fromUser == null || fromUser.getDeleted() == 1){
+            throw new RuntimeException("抱歉，申请人账号已注销，无法添加其为好友");
+        }
+
+        apply.setStatus(1);
+        friendApplyMapper.updateById(apply);
+        Friend friend1 = new Friend();
+        friend1.setUserId(apply.getToUserId());
+        friend1.setFriendId(apply.getFromUserId());
+        Friend friend2 = new Friend();
+        friend2.setUserId(apply.getFromUserId());
+        friend2.setFriendId(apply.getToUserId());
+        friendMapper.insert(friend1);
+        friendMapper.insert(friend2);
+    }
+
+    // 拒绝好友申请
+    @Transactional
+    public void rejectApply(Long applyId,Long currentUsrId){
+        FriendApply apply = friendApplyMapper.selectById(applyId);
+        if (apply == null) {
+            throw new RuntimeException("对不起，该申请记录不存在");
+        }
+        if (apply.getStatus() != 0) {
+            throw new RuntimeException("该申请已处理");
+        }
+        if (!apply.getToUserId().equals(currentUsrId)) {
+            throw new RuntimeException("抱歉，您无权处理该申请");
+        }
+
+        apply.setStatus(2);
+        friendApplyMapper.updateById(apply);
     }
 }

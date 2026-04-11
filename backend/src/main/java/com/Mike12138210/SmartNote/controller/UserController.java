@@ -40,7 +40,7 @@ public class UserController {
     public Long getCurrentUserId() {
         Long userId = ThreadLocalUtil.get();
         if (userId == null) {
-            throw new RuntimeException("用户未登录，请重试。");
+            throw new RuntimeException("用户未登录，请重试");
         }
         return userId;
     }

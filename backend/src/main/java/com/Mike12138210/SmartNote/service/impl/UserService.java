@@ -97,13 +97,13 @@ public class UserService {
         User user =userMapper.selectOne(wrapper);
 
         if(user == null){
-            throw new RuntimeException("账号不存在，请稍后重试。");
+            throw new RuntimeException("账号不存在，请稍后重试");
         }
 
         String storedHash = user.getPassword(); // 从数据库查出用户的密文 storedHash
         boolean isMatch = passwordEncoder.matches(password,storedHash); // 验证：明文 + 密文 -> true/false
         if(!isMatch){
-            throw new RuntimeException("密码错误，请稍后重试。");
+            throw new RuntimeException("密码错误，请稍后重试");
         }
 
         Map<String, Object> claims = new HashMap<>();

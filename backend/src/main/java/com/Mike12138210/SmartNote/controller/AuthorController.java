@@ -23,7 +23,7 @@ public class AuthorController {
     @PostMapping("/register")
     public Result<?> register(@Valid @RequestBody RegisterRequest request){
         if(!request.getPassword().equals(request.getConfirmPassword())){
-            return Result.error("两次密码输入不一致，请重新输入。");
+            return Result.error("两次密码输入不一致，请重新输入");
         }
 
         User user = new User();

@@ -31,7 +31,7 @@ public class FriendController {
         if(result != null){
             return Result.success(result);
         }else{
-            return Result.success("好友申请发送成功，请等待对方同意。",null);
+            return Result.success("好友申请发送成功，请等待对方同意",null);
         }
     }
 
@@ -41,5 +41,21 @@ public class FriendController {
         Long userId = friendService.getCurrentUserId();
         List<PendingApplyVO> list = friendService.getPendingApplications(userId);
         return Result.success(list);
+    }
+
+    // 同意好友申请
+    @PutMapping("/requests/{applyId}/approve")
+    public Result<?> approveApply(@PathVariable Long applyId){
+        Long userId = friendService.getCurrentUserId();
+        friendService.approveApply(applyId,userId);
+        return Result.success("已成功添加该好友",null);
+    }
+
+    // 拒绝好友申请
+    @PutMapping("/requests/{applyId}/reject")
+    public Result<?> rejectApply(@PathVariable Long applyId){
+        Long userId = friendService.getCurrentUserId();
+        friendService.rejectApply(applyId,userId);
+        return Result.success("已拒绝该好友申请",null);
     }
 }
