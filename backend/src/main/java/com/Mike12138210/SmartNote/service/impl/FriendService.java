@@ -7,9 +7,11 @@ import com.Mike12138210.SmartNote.mapper.FriendApplyMapper;
 import com.Mike12138210.SmartNote.mapper.FriendMapper;
 import com.Mike12138210.SmartNote.mapper.UserMapper;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import com.Mike12138210.SmartNote.vo.FriendVO;
 import com.Mike12138210.SmartNote.vo.PendingApplyVO;
 import com.Mike12138210.SmartNote.vo.UserSearchVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -173,5 +176,58 @@ public class FriendService {
 
         apply.setStatus(2);
         friendApplyMapper.updateById(apply);
+    }
+
+    // 查看好友列表
+    public Page<FriendVO> getFriendList(int pageNum, int pageSize, String groupName, Long userId){
+        // 构造分页对象
+        Page<Friend> page = new Page<>(pageNum,pageSize);
+        // 查询条件：user_id = 当前用户ID，可选 group_name
+        LambdaQueryWrapper<Friend> friendWrapper = new LambdaQueryWrapper<>();
+        friendWrapper.eq(Friend::getUserId,userId);
+        if(groupName != null && !groupName.isEmpty()){
+            friendWrapper.eq(Friend::getGroupName,groupName);
+        }
+
+        // 分页查询 friend 表
+        Page<Friend> friendPage = friendMapper.selectPage(page,friendWrapper);
+        List<Friend> friends = friendPage.getRecords();
+        if(friends.isEmpty()){
+            return new Page<>(pageNum,pageSize,0);
+        }
+
+        // 收集好友ID列表
+        List<Long> friendIds =  friends.stream()
+                .map(Friend::getFriendId)
+                .toList();
+
+        // 根据ID列表批量查询用户信息
+        List<User> users = userMapper.selectList(
+                new LambdaQueryWrapper<User>().in(User::getId,friendIds)
+        );
+
+        // 将用户信息转为 Map，方便快速查找
+        Map<Long,User> userMap = users.stream()
+                .collect(Collectors.toMap(User::getId,user -> user));
+
+        // 组装 FriendVO 列表
+        List<FriendVO> voList = new ArrayList<>();
+        for(Friend friend : friends){
+            User user = userMap.get(friend.getFriendId());
+            if(user != null && user.getDeleted() == 0){
+                FriendVO vo = new FriendVO();
+                vo.setFriendId(user.getId());
+                vo.setNickname(user.getNickname() != null ? user.getNickname() : user.getUsername());
+                vo.setAvatar(user.getAvatar());
+                vo.setMotto(user.getMotto());
+                vo.setGroupName(friend.getGroupName());
+                voList.add(vo);
+            }
+        }
+
+        // 创建新的分页对象返回
+        Page<FriendVO> resultPage = new Page<>(friendPage.getCurrent(),friendPage.getSize(),friendPage.getTotal());
+        resultPage.setRecords(voList);
+        return resultPage;
     }
 }

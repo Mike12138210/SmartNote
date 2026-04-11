@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class NoteService {
@@ -119,10 +120,9 @@ public class NoteService {
         }
 
         // 收集所有浏览过的笔记的ID
-        List<Long> noteIds = new ArrayList<>();
-        for(NoteHistory h : histories){
-            noteIds.add(h.getNoteId());
-        }
+        List<Long> noteIds = histories.stream()
+                .map(NoteHistory::getNoteId)
+                .collect(Collectors.toList());
 
         // 根据ID批量查询笔记
         LambdaQueryWrapper<Note> noteWrapper = new LambdaQueryWrapper<>();
@@ -130,15 +130,13 @@ public class NoteService {
         List<Note> notes = noteMapper.selectList(noteWrapper);
 
         //将笔记列表转换成Map，方便按ID快速查找
-        Map<Long, Note> noteMap = new HashMap<>();
-        for(Note n : notes){
-            noteMap.put(n.getNoteId(),n);
-        }
+        Map<Long,Note> noteMap = notes.stream()
+                .collect(Collectors.toMap(Note::getNoteId,note -> note));
 
         // 根据笔记ID构造最终返回的笔记列表
         List<Note> result = new ArrayList<>();
-        for(NoteHistory h : histories){
-            Note note = noteMap.get(h.getNoteId());
+        for(NoteHistory history : histories){
+            Note note = noteMap.get(history.getNoteId());
             if(note == null){ // 笔记可能已被删除
                 continue;
             }

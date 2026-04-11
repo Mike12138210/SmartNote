@@ -3,8 +3,10 @@ package com.Mike12138210.SmartNote.controller;
 import com.Mike12138210.SmartNote.dto.FriendApplyRequest;
 import com.Mike12138210.SmartNote.service.impl.FriendService;
 import com.Mike12138210.SmartNote.utils.Result;
+import com.Mike12138210.SmartNote.vo.FriendVO;
 import com.Mike12138210.SmartNote.vo.PendingApplyVO;
 import com.Mike12138210.SmartNote.vo.UserSearchVO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -57,5 +59,15 @@ public class FriendController {
         Long userId = friendService.getCurrentUserId();
         friendService.rejectApply(applyId,userId);
         return Result.success("已拒绝该好友申请",null);
+    }
+
+    // 查看好友列表
+    @GetMapping
+    public Result<Page<FriendVO>> getFriendList(@RequestParam(defaultValue = "1")int pageNum,
+                                                @RequestParam(defaultValue = "10")int pageSize,
+                                                @RequestParam(required = false)String groupName){
+        Long userId = friendService.getCurrentUserId();
+        Page<FriendVO> page = friendService.getFriendList(pageNum,pageSize,groupName,userId);
+        return Result.success(page);
     }
 }
