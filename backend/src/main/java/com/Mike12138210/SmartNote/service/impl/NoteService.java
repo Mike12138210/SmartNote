@@ -1,15 +1,15 @@
 package com.Mike12138210.SmartNote.service.impl;
 
 import com.Mike12138210.SmartNote.dto.NotePatchRequest;
-import com.Mike12138210.SmartNote.dto.NotePermissionRequest;
-import com.Mike12138210.SmartNote.entity.Friend;
 import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.entity.NoteHistory;
 import com.Mike12138210.SmartNote.mapper.NoteHistoryMapper;
 import com.Mike12138210.SmartNote.mapper.NoteMapper;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import com.Mike12138210.SmartNote.vo.NoteAnalysisVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -26,6 +26,10 @@ public class NoteService {
     private NoteHistoryMapper noteHistoryMapper;
     @Autowired
     private FriendService friendService;
+    @Autowired
+    private AiService aiService;
+    @Autowired
+    private RateLimitService rateLimitService;
 
     // 新增笔记
     public void createNote(Note note){
@@ -47,16 +51,13 @@ public class NoteService {
         wrapper.eq(Note::getUserId,userId)
                 .orderByDesc(Note::getUpdateTime); // 按更新时间排序
 
-        if (title != null && !title.isEmpty()) {
-            if(StringUtils.hasText(title)){
-                wrapper.like(Note::getTitle,title); //包含该title即可
-            }
+        if(StringUtils.hasText(title)){
+            wrapper.like(Note::getTitle,title); //包含该title即可
         }
-        if (tag != null && !tag.isEmpty()) {
-            if(StringUtils.hasText(tag)){
-                wrapper.like(Note::getTags,tag); // 包含该标签即可
-            }
+        if(StringUtils.hasText(tag)){
+            wrapper.like(Note::getTags,tag); // 包含该标签即可
         }
+
         return noteMapper.selectPage(page,wrapper); // 查询总数和当前页数据
     }
 
@@ -184,7 +185,7 @@ public class NoteService {
             throw new RuntimeException("用户未登录，请稍后重试");
         }
 
-        Note note = noteMapper.selectById(userId);
+        Note note = noteMapper.selectById(noteId);
         if(note == null){
             throw new RuntimeException("笔记不存在或已被删除，请稍后重试");
         }
@@ -217,5 +218,44 @@ public class NoteService {
         }
         note.setPermission(permission);
         noteMapper.updateById(note);
+    }
+
+    // 调用AI分析笔记
+    public NoteAnalysisVO analyzeNote(Long noteId,boolean force){
+        Long userId = ThreadLocalUtil.get();
+        if(userId == null){
+            throw new RuntimeException("用户未登录，请稍后重试");
+        }
+
+        Note note = noteMapper.selectById(noteId);
+        if(note == null){
+            throw new RuntimeException("对不起，该笔记不存在");
+        }
+
+        if(!note.getUserId().equals(userId)){
+            throw new RuntimeException("对不起，您无权分析此笔记");
+        }
+        if(!force && note.getAiSummary() != null && note.getAiKeyPoints() != null){
+            throw new RuntimeException("该笔记已有分析结果，如需重新分析请使用force=true");
+        }
+
+        rateLimitService.check(userId);
+        // 调用AI服务
+        Map<String, Object> aiResult = aiService.generateSummaryAndKeyPoints(note.getContent());
+        String summary = (String) aiResult.get("summary");
+        List<String> keyPoints = (List<String>) aiResult.get("keyPoints");
+        // 将keyPoints列表转为JSON字符串存储
+        String keyPointsJson = null;
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            keyPointsJson = mapper.writeValueAsString(keyPoints);
+        }catch(Exception e){
+            throw new RuntimeException("对不起，储存要点失败");
+        }
+
+        note.setAiSummary(summary);
+        note.setAiKeyPoints(keyPointsJson);
+        noteMapper.updateById(note);
+        return new NoteAnalysisVO(summary,keyPoints);
     }
 }

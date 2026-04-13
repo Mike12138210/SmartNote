@@ -11,7 +11,6 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
 
-
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml #mapper映射文件路径
   global-config:
@@ -29,3 +28,11 @@ logging:
 jwt:
   secret: "bWlrZTEyMTM4bWlrZTEyMTM4bWlrZTEyMTM4bWlrZTEyMTM4"
   expiration: 86400000
+
+ai:
+  api:
+    key: sk-427c121e32d841a8b05b1b3191645ab3
+    url: https://api.deepseek.com/v1/chat/completions
+    model: deepseek-chat
+  rate-limit:
+    max-calls-per-day: 20
