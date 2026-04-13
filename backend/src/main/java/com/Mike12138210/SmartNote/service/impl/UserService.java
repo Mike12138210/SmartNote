@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,13 +52,13 @@ public class UserService {
 
         if(count > 0){
             if (isUsernameExist(username)) {
-                throw new RuntimeException("该用户名已存在，请重新输入");
+                throw new RuntimeException("该用户名已存在，请勿重复注册");
             }
             if (isEmailExist(email)) {
-                throw new RuntimeException("该邮箱已存在，请重新输入");
+                throw new RuntimeException("该邮箱已存在，请勿重复注册");
             }
             if (isPhoneExist(phone)) {
-                throw new RuntimeException("该手机号已存在，请重新输入");
+                throw new RuntimeException("该手机号已存在，请勿重复注册");
             }
         }
     }

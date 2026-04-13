@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device=width, initial-scale=1.0">
+    <title>智能笔记 - 登录</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h2>登录</h2>
+      <form id="loginForm">
+        <input type="text" id="account" placeholder="邮箱/手机号" required>
+        <input type="password" id="password" placeholder="密码" required>
+        <button type="submit">登录</button>
+      </form>
+      <p>还没有账号？<a href="register.html">立即注册</a></p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/auth.js"></script>
+  </body>
+</html>
