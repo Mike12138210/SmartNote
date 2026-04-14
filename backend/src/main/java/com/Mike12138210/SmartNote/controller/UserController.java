@@ -20,10 +20,9 @@ public class UserController {
 
     // 获取当前登录用户信息
     @GetMapping("/me")
-    private Result<UserInfoVO> getCurrentUser(){
-        Map<String, Object> claims = ThreadLocalUtil.get();
-        Long userId = ((Number)claims.get("userId")).longValue();
-
+    private Result<UserInfoVO> getProfile(){
+        Long userId = getCurrentUserId();
+        if(userId == null) throw new RuntimeException("用户未登录，请稍后重试");
         UserInfoVO userInfo = userService.getUserInfo(userId);
         return Result.success(userInfo);
     }

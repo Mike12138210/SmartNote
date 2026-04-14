@@ -69,7 +69,7 @@ public class FriendService {
                 .or()
                 .like(User::getUsername,keyword)
         );
-        userWrapper.ne(User::getId,currentUserId);
+        userWrapper.ne(User::getUid,currentUserId);
         List<User> users = userMapper.selectList(userWrapper);
         return users.stream()
                 .map(UserSearchVO::new)
@@ -203,12 +203,12 @@ public class FriendService {
 
         // 根据ID列表批量查询用户信息
         List<User> users = userMapper.selectList(
-                new LambdaQueryWrapper<User>().in(User::getId,friendIds)
+                new LambdaQueryWrapper<User>().in(User::getUid,friendIds)
         );
 
         // 将用户信息转为 Map，方便快速查找
         Map<Long,User> userMap = users.stream()
-                .collect(Collectors.toMap(User::getId,user -> user));
+                .collect(Collectors.toMap(User::getUid,user -> user));
 
         // 组装 FriendVO 列表
         List<FriendVO> voList = new ArrayList<>();
@@ -216,7 +216,7 @@ public class FriendService {
             User user = userMap.get(friend.getFriendId());
             if(user != null && user.getDeleted() == 0){
                 FriendVO vo = new FriendVO();
-                vo.setFriendId(user.getId());
+                vo.setFriendId(user.getUid());
                 vo.setNickname(user.getNickname() != null ? user.getNickname() : user.getUsername());
                 vo.setAvatar(user.getAvatar());
                 vo.setMotto(user.getMotto());

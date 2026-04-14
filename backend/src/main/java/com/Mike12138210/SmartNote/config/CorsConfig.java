@@ -9,9 +9,9 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry){
         registry.addMapping("/**") // 允许所有路径
-                .allowedOriginPatterns("*") // 允许所有源（开发环境用，生产环境需指定具体域名）
+                .allowedOriginPatterns("http://localhost:5500","http://127.0.0.1:5500")
                 .allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS") // 允许的方法
-                .allowedHeaders("http://localhost:5500","http://127.0.0.1:5500") 
+                .allowedHeaders("*") // 允许所有请求头
                 .allowCredentials(true) // 允许携带cookie
                 .maxAge(3600); // 预检请求缓存时间（秒）
     }

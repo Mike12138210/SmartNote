@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 
 @TableName("user") // 指定该实体类对应的表名
 public class User {
-    // id,username,email,phone,nickname,avatar,motto
+    // uid,username,email,phone,nickname,avatar,motto
     @TableId(type = IdType.AUTO) // 标记主键字段，并指定主键生成策略为数据库自增
-    private Long id;
+    private Long uid;
     private String username;
     @Email
     private String email;
@@ -28,12 +28,12 @@ public class User {
     @TableLogic // 逻辑删除注解，MyBatis-Plus 会自动在查询条件中加入 `deleted=0`
     private Integer deleted; // 0-未删除，1-已删除
 
-    public Long getId() {
-        return id;
+    public Long getUid() {
+        return uid;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUid(Long uid) {
+        this.uid = uid;
     }
 
     public String getUsername() {

@@ -4,29 +4,57 @@ body {
     margin: 0;
     padding: 20px;
 }
-.container{
+.container {
     max-width: 400px;
     margin: 50px auto;
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0,1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);   /* 修正阴影值 */
 }
-input, button{
+input, button {
     width: 100%;
     padding: 10px;
     margin: 8px 0;
     box-sizing: border-box;
 }
-button{
+button {
     background: #007bff;
     color: white;
     border: none;
     cursor: pointer;
 }
-button:hover{
+button:hover {
     background: #0056b3;
 }
-a{
+a {
     color: #007bff;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    white-space: nowrap;   /* 禁止换行 */
+}
+th:nth-child(1) { width: 70px; }   /* 笔记序号 */
+th:nth-child(2) { width: 150px; }  /* 标题 */
+th:nth-child(3) { width: 100px; }  /* 标签 */
+th:nth-child(4) { width: 200px; }  /* AI摘要 */
+th:nth-child(5) { width: 200px; }  /* AI要点 */
+th:nth-child(6) { width: 150px; }  /* 修改时间 */
+th:nth-child(7) { width: 90px; }   /* 操作 */
+.table-container {
+    overflow-x: auto;
+}
+/* 如果需要某些列允许换行，可以单独设置 
+th:first-child, td:first-child { 笔记序号列 } */
+
+/* 主页专用容器 */
+.main-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }

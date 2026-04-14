@@ -106,7 +106,7 @@ public class UserService {
         }
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId",user.getId());
+        claims.put("userId",user.getUid());
         return jwtUtil.genToken(claims);
     }
 

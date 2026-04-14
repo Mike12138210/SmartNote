@@ -15,7 +15,7 @@ public class UserInfoVO {
     private LocalDateTime createTime;
 
     public UserInfoVO(User user) {
-        this.id = user.getId();
+        this.id = user.getUid();
         this.username = user.getUsername();
         this.nickname = user.getNickname();
         this.email = user.getEmail();

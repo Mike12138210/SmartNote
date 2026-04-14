@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能笔记 - 主页</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
+        .user-info { font-weight: bold; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .toolbar { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background: #dc3545; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #f2f2f2; }
+        .pagination { margin-top: 20px; display: flex; gap: 10px; justify-content: center; align-items: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%; }
+        .modal-content input, .modal-content textarea { width: 100%; margin-bottom: 10px; padding: 8px; }
+        .error { color: red; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <div class="header">
+        <div class="user-info" id="userInfo">加载中...</div>
+        <button class="logout-btn" id="logoutBtn">退出登录</button>
+    </div>
+
+    <div class="toolbar">
+        <input type="text" id="searchTitle" placeholder="搜索标题" class="search-input">
+        <input type="text" id="searchTag" placeholder="搜索标签" class="search-input">
+        <button class="btn" id="searchBtn">搜索</button>
+        <button class="btn" id="addNoteBtn">新增笔记</button>
+    </div>
+
+    <table id="noteTable">
+        <thead>
+            <tr>
+                <th>笔记序号</th>
+                <th>标题</th>
+                <th>标签</th>
+                <th>AI总结</th>
+                <th>AI要点</th>
+                <th>修改时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="noteTableBody"></tbody>
+    </table>
+
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- 新增/编辑笔记的模态框 -->
+<div id="noteModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">新增笔记</h3>
+        <input type="hidden" id="noteId">
+        <label for="noteTitle">标题：</label>
+        <input type="text" id="noteTitle" placeholder="标题" required>
+        <label for="noteContent">内容：</label>
+        <textarea id="noteContent" rows="5" placeholder="内容（支持Markdown）"></textarea>
+        <label for="noteTags">标签：</label>
+        <input type="text" id="noteTags" placeholder="标签（逗号分隔）">
+        <button class="btn" id="saveNoteBtn">保存</button>
+        <button class="btn" id="cancelModalBtn">取消</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="module" src="js/api.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

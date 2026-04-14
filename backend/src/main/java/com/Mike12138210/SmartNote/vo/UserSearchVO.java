@@ -10,7 +10,7 @@ public class UserSearchVO {
     private String motto;
 
     public UserSearchVO(User user) {
-        this.id = user.getId();
+        this.id = user.getUid();
         this.username = user.getUsername();
         this.nickname = user.getNickname();
         this.avatar = user.getAvatar();
