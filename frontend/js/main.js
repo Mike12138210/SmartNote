@@ -324,3 +324,19 @@ cancelModalBtn.addEventListener('click', closeModal);
 // 初始加载
 loadUserInfo();
 loadNotes(1);
+
+// 处理从详情页跳转过来的编辑请求
+const urlParams = new URLSearchParams(window.location.search);
+const editNoteId = urlParams.get('edit');
+if (editNoteId) {
+    // 等待笔记列表加载完成后再打开编辑
+    // 简单方式：延迟执行，或者使用 Promise
+    setTimeout(async () => {
+        try {
+            const note = await api.getNote(editNoteId);
+            openModal(note);
+        } catch (err) {
+            alert('加载笔记失败：' + err.message);
+        }
+    }, 500);
+}

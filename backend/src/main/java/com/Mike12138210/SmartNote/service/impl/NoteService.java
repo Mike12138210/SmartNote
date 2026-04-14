@@ -235,8 +235,13 @@ public class NoteService {
         if(!note.getUserId().equals(userId)){
             throw new RuntimeException("对不起，您无权分析此笔记");
         }
-        if(!force && note.getAiSummary() != null && note.getAiKeyPoints() != null){
-            throw new RuntimeException("该笔记已有分析结果，如需重新分析请使用force=true");
+        if (!force && note.getAiSummary() != null && note.getAiKeyPoints() != null) {
+            // 已有结果且不强制，直接返回已有结果
+            List<String> keyPoints = null;
+            try {
+                keyPoints = new ObjectMapper().readValue(note.getAiKeyPoints(), List.class);
+            } catch (Exception e) { /* 忽略 */ }
+            return new NoteAnalysisVO(note.getAiSummary(), keyPoints);
         }
 
         rateLimitService.check(userId);

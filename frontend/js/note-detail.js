@@ -53,7 +53,7 @@ function renderNoteDetail(note) {
             <span>标签：${escapeHtml(note.tags || '无')}</span>&nbsp;&nbsp;
             <span>更新时间：${new Date(note.updateTime).toLocaleString()}</span>
         </div>
-        <div class="note-content">${escapeHtml(note.content).replace(/\n/g, '<br>')}</div>
+        <div class="note-content markdowm-body">${marked.parse(note.content)}</div>
         <div class="ai-section">
             <h3>🤖 AI 智能分析</h3>
             <div class="ai-summary">
@@ -62,15 +62,18 @@ function renderNoteDetail(note) {
             <div class="ai-keypoints">
                 <strong>要点：</strong> ${keyPointsHtml}
             </div>
-            <button id="analyzeBtn" class="btn" data-force="false">✨ AI 分析（重新）</button>
-            <button id="forceAnalyzeBtn" class="btn btn-warning" data-force="true">🔄 强制重新分析</button>
+            <button id="analyzeBtn" class="btn">🤖 AI智能分析（生成/刷新）</button>
+            <button id="editNoteBtn" class="btn btn-warning">编辑笔记</button>
         </div>
     `;
     noteDetailDiv.innerHTML = html;
 
     // 绑定 AI 分析按钮事件
-    document.getElementById('analyzeBtn').addEventListener('click', () => analyzeNote(false));
-    document.getElementById('forceAnalyzeBtn').addEventListener('click', () => analyzeNote(true));
+    document.getElementById('analyzeBtn').addEventListener('click', () => analyzeNote(true));
+    // 绑定编辑笔记事件
+    document.getElementById('editNoteBtn').addEventListener('click', () => {
+        window.location.href = `index.html?edit=${noteId}`;
+    });
 }
 
 // 调用 AI 分析接口
