@@ -169,7 +169,7 @@ function renderNotes(notes) {
         }
         html += `<tr>
             <td>${note.noteId}</td>   <!-- 笔记序号 -->
-            <td>${escapeHtml(note.title)}</td>
+            <td><a href="#" class="note-title" data-id="${note.noteId}">${escapeHtml(note.title)}</a></td>
             <td>${escapeHtml(note.tags || '')}</td>
             <td>${escapeHtml(note.aiSummary || '-')}</td>
             <td>${escapeHtml(keyPointsText)}</td>
@@ -178,10 +178,17 @@ function renderNotes(notes) {
                 <button class="btn btn-warning" data-id="${note.noteId}" data-action="edit">编辑</button>
                 <button class="btn btn-danger" data-id="${note.noteId}" data-action="delete">删除</button>
             </td>
-        `;
+`;
     }
     noteTableBody.innerHTML = html;
-
+    // 绑定查看事件
+    document.querySelectorAll('.note-title').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const noteId = parseInt(link.dataset.id);
+            window.location.href = `note-detail.html?id=${noteId}`; // 跳转到详情页
+        });
+    });
     // 绑定编辑和删除事件
     document.querySelectorAll('[data-action="edit"]').forEach(btn => {
         btn.addEventListener('click', () => editNote(parseInt(btn.dataset.id)));
