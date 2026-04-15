@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能笔记 - 好友管理</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .search-result, .friend-list, .pending-list {
+            margin-top: 10px;
+        }
+        .user-item, .friend-item, .pending-item {
+            border-bottom: 1px solid #eee;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .search-input {
+            width: 70%;
+            padding: 8px;
+            margin-right: 10px;
+        }
+        .group-filter {
+            margin-bottom: 15px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>好友管理</h2>
+
+    <!-- 搜索用户 -->
+    <div class="section">
+        <h3>添加好友</h3>
+        <input type="text" id="searchKeyword" class="search-input" placeholder="输入邮箱/手机号/用户名">
+        <button id="searchBtn" class="btn">搜索</button>
+        <div id="searchResult" class="search-result"></div>
+    </div>
+
+    <!-- 待处理申请 -->
+    <div class="section">
+        <h3>待处理的好友申请</h3>
+        <div id="pendingList" class="pending-list">加载中...</div>
+    </div>
+
+    <!-- 好友列表 -->
+    <div class="section">
+        <h3>我的好友</h3>
+        <div class="group-filter">
+            <label>分组筛选：</label>
+            <select id="groupFilter">
+                <option value="">全部</option>
+                <option value="默认">默认</option>
+                <option value="同学">同学</option>
+                <option value="家人">家人</option>
+                <option value="同事">同事</option>
+            </select>
+            <button id="filterBtn" class="btn-sm btn">筛选</button>
+        </div>
+        <div id="friendList" class="friend-list">加载中...</div>
+        <div id="friendPagination" class="pagination"></div>
+    </div>
+
+    <a href="index.html" class="back-link">← 返回主页</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="module" src="js/api.js"></script>
+<script type="module" src="js/friends.js"></script>
+</body>
+</html>

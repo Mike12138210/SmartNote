@@ -24,6 +24,7 @@ const noteContentInput = document.getElementById('noteContent');
 const noteTagsInput = document.getElementById('noteTags');
 const saveNoteBtn = document.getElementById('saveNoteBtn');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
+const friendsBtn = document.getElementById('friendsBtn');
 
 // 当前分页参数
 let currentPage = 1;
@@ -288,6 +289,11 @@ logoutBtn.addEventListener('click', logout);
 if (profileBtn) {
     profileBtn.addEventListener('click', () => {
         window.location.href = 'profile.html';
+    });
+}
+if (friendsBtn) {
+    friendsBtn.addEventListener('click', () => {
+        window.location.href = 'friends.html';
     });
 }
 searchBtn.addEventListener('click', () => loadNotes(1));
