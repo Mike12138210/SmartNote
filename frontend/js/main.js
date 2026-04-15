@@ -1,5 +1,5 @@
 import api from './api.js';
-import { removeToken, isLoggedIn, getFullUrl} from './utils.js';
+import { removeToken, isLoggedIn, getFullUrl } from './utils.js';
 
 // 检查登录状态，未登录则跳转
 if (!isLoggedIn()) {
@@ -92,7 +92,8 @@ function renderNotes(notes) {
     }
 
     if (!sortedNotes.length) {
-        noteTableBody.innerHTML = '<tr><td colspan="7">暂无笔记</td></tr>';
+        // 修正：表格现在有 8 列（序号、标题、标签、AI总结、AI要点、修改时间、权限、操作）
+        noteTableBody.innerHTML = '<tr><td colspan="8">暂无笔记</td></tr>';
         return;
     }
 
@@ -115,6 +116,13 @@ function renderNotes(notes) {
             <td>${escapeHtml(keyPointsText)}</td>
             <td>${new Date(note.updateTime).toLocaleString()}</td>
             <td>
+                <select class="permission-select" data-id="${note.noteId}" data-permission="${note.permission}">
+                    <option value="仅自己可见" ${note.permission === '仅自己可见' ? 'selected' : ''}>仅自己可见</option>
+                    <option value="仅好友可见" ${note.permission === '仅好友可见' ? 'selected' : ''}>仅好友可见</option>
+                    <option value="所有人可见" ${note.permission === '所有人可见' ? 'selected' : ''}>所有人可见</option>
+                </select>
+            </td>
+            <td>
                 <button class="btn btn-warning" data-id="${note.noteId}" data-action="edit">编辑</button>
                 <button class="btn btn-danger" data-id="${note.noteId}" data-action="delete">删除</button>
             </td>
@@ -128,6 +136,21 @@ function renderNotes(notes) {
     });
     document.querySelectorAll('[data-action="delete"]').forEach(btn => {
         btn.addEventListener('click', () => deleteNote(parseInt(btn.dataset.id)));
+    });
+    // 绑定权限修改事件
+    document.querySelectorAll('.permission-select').forEach(select => {
+        select.addEventListener('change', async (e) => {
+            const noteId = parseInt(select.dataset.id);
+            const newPermission = select.value;
+            try {
+                await api.updateNotePermission(noteId, newPermission);
+                alert('权限修改成功');
+                select.setAttribute('data-permission', newPermission);
+            } catch (err) {
+                alert('修改失败：' + err.message);
+                select.value = select.getAttribute('data-permission');
+            }
+        });
     });
 }
 
@@ -252,7 +275,6 @@ function bindSortEvents() {
     if (sortIdHeader) {
         sortIdHeader.addEventListener('click', () => {
             if (sortField === 'noteId') {
-                // 第三次点击恢复默认
                 if (sortOrder === 'desc') {
                     sortField = null;
                     sortOrder = 'asc';
@@ -320,8 +342,7 @@ searchTag.addEventListener('input', () => {
     searchTimer = setTimeout(() => loadNotes(1), 500);
 });
 
-// 绑定排序事件（注意：需要表头有 id="sortId" 和 id="sortUpdateTime"）
-// 如果表头没有这些 id，可以注释掉，或者修改 HTML 添加
+// 绑定排序事件（需要表头有 id="sortId" 和 id="sortUpdateTime"）
 bindSortEvents();
 
 // ========== 处理从详情页跳转过来的编辑请求 ==========

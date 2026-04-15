@@ -42,7 +42,8 @@ th:nth-child(3) { width: 100px; }  /* 标签 */
 th:nth-child(4) { width: 200px; }  /* AI摘要 */
 th:nth-child(5) { width: 200px; }  /* AI要点 */
 th:nth-child(6) { width: 150px; }  /* 修改时间 */
-th:nth-child(7) { width: 90px; }   /* 操作 */
+th:nth-child(7) { width: 100px; }
+th:nth-child(8) { width: 150px; }  /* 操作 */
 .table-container {
     overflow-x: auto;
 }

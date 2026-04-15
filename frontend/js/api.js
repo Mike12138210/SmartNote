@@ -87,6 +87,9 @@ export default {
     getRecentHistory(limit = 10) {
         return api.get('/notes/history/recent', { params: { limit } });
     },
+    updateNotePermission(noteId, permission) {
+    return api.put(`/notes/${noteId}/permission?permission=${encodeURIComponent(permission)}`);
+    },
 
     // 好友相关
     searchUsers(keyword) {
