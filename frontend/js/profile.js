@@ -13,8 +13,11 @@ const usernameInput = document.getElementById('username');
 const emailInput = document.getElementById('email');
 const phoneInput = document.getElementById('phone');
 const nicknameInput = document.getElementById('nickname');
-const avatarInput = document.getElementById('avatar');
 const mottoInput = document.getElementById('motto');
+const avatarInput = document.getElementById('avatar');         // 隐藏域，存储头像URL
+const avatarPreview = document.getElementById('avatarPreview');
+const avatarFile = document.getElementById('avatarFile');
+const uploadAvatarBtn = document.getElementById('uploadAvatarBtn');
 
 // 加载用户信息并填充表单
 async function loadProfile() {
@@ -24,13 +27,57 @@ async function loadProfile() {
         emailInput.value = user.email || '';
         phoneInput.value = user.phone || '';
         nicknameInput.value = user.nickname || '';
-        avatarInput.value = user.avatar || '';
         mottoInput.value = user.motto || '';
+        if (user.avatar) {
+            avatarInput.value = user.avatar;
+            avatarPreview.src = user.avatar;
+            avatarPreview.style.display = 'block';
+        } else {
+            avatarPreview.style.display = 'none';
+        }
     } catch (err) {
         alert('加载个人信息失败：' + err.message);
         console.error(err);
     }
 }
+
+// 上传头像
+uploadAvatarBtn.addEventListener('click', async () => {
+    const file = avatarFile.files[0];
+    if (!file) {
+        alert('请先选择图片文件');
+        return;
+    }
+    // 检查文件类型
+    if (!file.type.startsWith('image/')) {
+        alert('只能上传图片文件');
+        return;
+    }
+    // 检查文件大小（例如限制2MB）
+    if (file.size > 2 * 1024 * 1024) {
+        alert('图片大小不能超过2MB');
+        return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        // 注意：这里直接使用 axios，因为 api.js 中可能没有封装上传接口
+        const response = await axios.post('http://localhost:8080/api/upload/avatar', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        if (response.data.code === 200) {
+            const avatarUrl = response.data.data;
+            avatarInput.value = avatarUrl;
+            avatarPreview.src = avatarUrl;
+            avatarPreview.style.display = 'block';
+            alert('头像上传成功');
+        } else {
+            alert('上传失败：' + response.data.message);
+        }
+    } catch (err) {
+        alert('上传失败：' + (err.response?.data?.message || err.message));
+    }
+});
 
 // 保存个人信息
 profileForm.addEventListener('submit', async (e) => {
@@ -43,8 +90,7 @@ profileForm.addEventListener('submit', async (e) => {
     try {
         await api.updateProfile(data);
         alert('保存成功');
-        // 重新加载以显示最新信息
-        await loadProfile();
+        await loadProfile();  // 重新加载显示最新信息
     } catch (err) {
         alert('保存失败：' + err.message);
     }
@@ -72,7 +118,6 @@ passwordForm.addEventListener('submit', async (e) => {
     try {
         await api.updatePassword({ oldPassword, newPassword });
         alert('密码修改成功，请重新登录');
-        // 清空 token 并跳转到登录页
         localStorage.removeItem('token');
         window.location.href = 'login.html';
     } catch (err) {
