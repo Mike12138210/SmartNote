@@ -88,7 +88,7 @@ export default {
         return api.get('/notes/history/recent', { params: { limit } });
     },
     updateNotePermission(noteId, permission) {
-    return api.put(`/notes/${noteId}/permission?permission=${encodeURIComponent(permission)}`);
+        return api.put(`/notes/${noteId}/permission`,{ permission});
     },
 
     // 好友相关
@@ -109,5 +109,5 @@ export default {
     },
     getFriends(pageNum = 1, pageSize = 10, groupName = '') {
         return api.get('/friends', { params: { pageNum, pageSize, groupName } });
-    },
+    }
 };

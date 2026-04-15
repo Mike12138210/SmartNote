@@ -68,6 +68,7 @@ async function loadNotes(page = 1) {
         renderNotes(data.records);
         totalPages = data.pages;
         renderPagination();
+        updateSortIcons();   // 新增：更新表头图标
     } catch (err) {
         alert('加载笔记失败：' + err.message);
     }
@@ -268,19 +269,38 @@ function logout() {
     window.location.href = 'login.html';
 }
 
+// 更新表头排序图标
+function updateSortIcons() {
+    const idIcon = document.querySelector('#sortId i');
+    const timeIcon = document.querySelector('#sortUpdateTime i');
+    // 重置为默认双向箭头
+    if (idIcon) idIcon.className = 'fas fa-sort';
+    if (timeIcon) timeIcon.className = 'fas fa-sort';
+    if (sortField === 'noteId') {
+        if (sortOrder === 'asc') {
+            idIcon.className = 'fas fa-sort-up';
+        } else if (sortOrder === 'desc') {
+            idIcon.className = 'fas fa-sort-down';
+        }
+    } else if (sortField === 'updateTime') {
+        if (sortOrder === 'asc') {
+            timeIcon.className = 'fas fa-sort-up';
+        } else if (sortOrder === 'desc') {
+            timeIcon.className = 'fas fa-sort-down';
+        }
+    }
+}
+
 // ========== 表头排序（绑定事件，只执行一次） ==========
 function bindSortEvents() {
     const sortIdHeader = document.getElementById('sortId');
     const sortTimeHeader = document.getElementById('sortUpdateTime');
+
     if (sortIdHeader) {
         sortIdHeader.addEventListener('click', () => {
             if (sortField === 'noteId') {
-                if (sortOrder === 'desc') {
-                    sortField = null;
-                    sortOrder = 'asc';
-                } else {
-                    sortOrder = 'desc';
-                }
+                // 切换顺序
+                sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
             } else {
                 sortField = 'noteId';
                 sortOrder = 'asc';
@@ -288,18 +308,15 @@ function bindSortEvents() {
             loadNotes(currentPage);
         });
     }
+
     if (sortTimeHeader) {
         sortTimeHeader.addEventListener('click', () => {
             if (sortField === 'updateTime') {
-                if (sortOrder === 'desc') {
-                    sortField = null;
-                    sortOrder = 'asc';
-                } else {
-                    sortOrder = 'desc';
-                }
+                // 切换顺序
+                sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
             } else {
                 sortField = 'updateTime';
-                sortOrder = 'desc';
+                sortOrder = 'asc';   // 初始点击改为升序（最早在前）
             }
             loadNotes(currentPage);
         });
