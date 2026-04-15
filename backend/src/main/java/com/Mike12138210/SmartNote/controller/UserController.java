@@ -10,8 +10,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("api/users")
 public class UserController {
@@ -20,7 +18,7 @@ public class UserController {
 
     // 获取当前登录用户信息
     @GetMapping("/me")
-    private Result<UserInfoVO> getProfile(){
+    public Result<UserInfoVO> getProfile(){
         Long userId = getCurrentUserId();
         if(userId == null) throw new RuntimeException("用户未登录，请稍后重试");
         UserInfoVO userInfo = userService.getUserInfo(userId);
@@ -29,7 +27,7 @@ public class UserController {
 
     // 修改个人资料
     @PutMapping("/me/profile")
-    private Result<?> updateProfile(@RequestBody ProfileUpdateRequest request){
+    public Result<?> updateProfile(@RequestBody ProfileUpdateRequest request){
         Long userId = getCurrentUserId();
         userService.updateProfile(userId,request);
         return Result.success("个人资料修改成功",null);

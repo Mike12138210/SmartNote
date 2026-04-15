@@ -12,13 +12,13 @@ public class Note {
     private String title;
     private String content; // markdown
     private String tags; // 逗号分隔
-    private String permission; // 仅自己可见,部分好友可见,所有人可见
+    private String permission; // 仅自己可见,仅好友可见,所有人可见
     private String aiSummary;
     private String aiKeyPoints;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    @TableField(update = "now()")
+    @TableField(fill = FieldFill.INSERT, update = "now()")
     private LocalDateTime updateTime;
     @TableLogic
     private Integer deleted;

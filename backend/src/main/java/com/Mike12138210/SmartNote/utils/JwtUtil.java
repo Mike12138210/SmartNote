@@ -10,9 +10,12 @@ import org.springframework.stereotype.Component;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class JwtUtil {
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
     @Value("${jwt.secret}")
     private String secretBase64;
@@ -27,7 +30,7 @@ public class JwtUtil {
         // 将 Base64 编码的密钥解码为字节数组
         byte[] keyBytes = Base64.getDecoder().decode(secretBase64);
         algorithm = Algorithm.HMAC256(keyBytes);
-        System.out.println("JWT 初始化成功，过期时间: " + expiration + " 毫秒");
+        log.info("JWT 初始化成功，过期时间: {} 毫秒", expiration);
     }
 
     // 生成 JWT，将 claims 嵌套在 "claims" 字段中（兼容现有的拦截器）
@@ -45,7 +48,7 @@ public class JwtUtil {
             DecodedJWT jwt = JWT.require(algorithm).build().verify(token);
             return jwt.getClaim("claims").asMap();
         } catch (Exception e) {
-            System.err.println("JWT 解析失败: " + e.getMessage());
+            log.error("JWT解析失败",e);
             return null;
         }
     }

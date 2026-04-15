@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/friends")
+@RequestMapping("/api/friends")
 public class FriendController {
     @Autowired
     private FriendService friendService;
@@ -26,7 +26,7 @@ public class FriendController {
     }
 
     // 发送好友申请
-    @PostMapping("/request")
+    @PostMapping("/requests")
     public Result<UserSearchVO> sendFriendApply(@Valid @RequestBody FriendApplyRequest request){
         Long currentUsrId = friendService.getCurrentUserId();
         UserSearchVO result = friendService.sendFriendApply(currentUsrId,request.getFriendId());
