@@ -120,6 +120,7 @@ public class UserService {
     // 修改个人资料
     public void updateProfile(Long userId, ProfileUpdateRequest request){
         User user = userMapper.selectById(userId);
+        if (user == null) throw new RuntimeException("用户不存在");
 
         if(request.getNickname() != null && !request.getNickname().isEmpty()){
             user.setNickname(request.getNickname());

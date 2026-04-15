@@ -29,12 +29,15 @@
 <body>
 <div class="main-container">
     <div class="header">
-    <div class="user-info" id="userInfo">加载中...</div>
-    <div>
-        <button id="profileBtn" class="btn" style="margin-right: 10px;">个人信息</button>
-        <button class="logout-btn" id="logoutBtn">退出登录</button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img id="avatarImg" src="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;">
+            <div class="user-info" id="userInfo">加载中...</div>
+        </div>
+        <div>
+            <button id="profileBtn" class="btn" style="margin-right: 10px;">个人信息</button>
+            <button class="logout-btn" id="logoutBtn">退出登录</button>
+        </div>
     </div>
-</div>
     <div class="toolbar">
         <input type="text" id="searchTitle" placeholder="搜索标题" class="search-input">
         <input type="text" id="searchTag" placeholder="搜索标签" class="search-input">

@@ -1,5 +1,5 @@
 import api from './api.js';
-import { isLoggedIn } from './utils.js';
+import { isLoggedIn, getFullUrl} from './utils.js';
 
 // 检查登录状态
 if (!isLoggedIn()) {
@@ -30,7 +30,7 @@ async function loadProfile() {
         mottoInput.value = user.motto || '';
         if (user.avatar) {
             avatarInput.value = user.avatar;
-            avatarPreview.src = user.avatar;
+            avatarPreview.src = getFullUrl(user.avatar);
             avatarPreview.style.display = 'block';
         } else {
             avatarPreview.style.display = 'none';
@@ -48,27 +48,28 @@ uploadAvatarBtn.addEventListener('click', async () => {
         alert('请先选择图片文件');
         return;
     }
-    // 检查文件类型
     if (!file.type.startsWith('image/')) {
         alert('只能上传图片文件');
         return;
     }
-    // 检查文件大小（例如限制2MB）
     if (file.size > 2 * 1024 * 1024) {
-        alert('图片大小不能超过2MB');
+        alert('图片大小不能超过10MB');
         return;
     }
     const formData = new FormData();
     formData.append('file', file);
     try {
-        // 注意：这里直接使用 axios，因为 api.js 中可能没有封装上传接口
+        const token = localStorage.getItem('token');  // 获取 token
         const response = await axios.post('http://localhost:8080/api/upload/avatar', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`   // 添加认证头
+            }
         });
         if (response.data.code === 200) {
             const avatarUrl = response.data.data;
             avatarInput.value = avatarUrl;
-            avatarPreview.src = avatarUrl;
+            avatarPreview.src = getFullUrl(avatarUrl);  // 添加 getFullUrl
             avatarPreview.style.display = 'block';
             alert('头像上传成功');
         } else {

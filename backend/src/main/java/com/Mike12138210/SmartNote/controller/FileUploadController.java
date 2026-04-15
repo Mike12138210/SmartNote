@@ -22,38 +22,35 @@ public class FileUploadController {
 
     @PostMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        // 1. 检查文件是否为空
         if (file.isEmpty()) {
             return Result.error("文件为空");
         }
+        try{
+            // 获取项目根目录
+            String projectRoot = System.getProperty("user.dir");
+            File dir = new File(projectRoot,"uploads");
+            if(!dir.exists()){
+                dir.mkdirs(); // 创建目录（如果不存在）
+            }
 
-        // 2. 获取原始文件名，提取扩展名
-        String originalFilename = file.getOriginalFilename();
-        String ext = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
+            // 提取文件扩展名
+            String originalFilename = file.getOriginalFilename();
+            String ext = "";
+            if(originalFilename != null && originalFilename.contains(".")){
+                ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
 
-        // 3. 生成唯一文件名（避免重名覆盖）
-        String newFileName = UUID.randomUUID().toString() + ext;
+            // 生成唯一文件名
+            String newFilename = UUID.randomUUID() + ext;
+            File dest = new File(dir,newFilename);
+            file.transferTo(dest); // 保存文件
 
-        // 4. 创建保存目录（如果不存在）
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        // 5. 保存文件
-        File dest = new File(dir, newFileName);
-        try {
-            file.transferTo(dest);
-        } catch (IOException e) {
+            // 返回访问URL
+            String url = "/uploads/" + newFilename;
+            return Result.success(url);
+        }catch (IOException e){
             e.printStackTrace();
-            return Result.error("文件保存失败");
+            return Result.error("文件保存失败：" + e.getMessage());
         }
-
-        // 6. 返回可访问的 URL（前端通过 /uploads/ 访问）
-        String url = "/uploads/" + newFileName;
-        return Result.success(url);
     }
 }

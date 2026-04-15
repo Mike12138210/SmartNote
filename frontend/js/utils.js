@@ -17,3 +17,13 @@ export function removeToken(){
 export function isLoggedIn(){
     return !!getToken();
 }
+
+// 获取后端基础 URL（不含 /api）
+export const BACKEND_BASE_URL = 'http://localhost:8080';
+
+// 将相对路径（如 /uploads/xxx.jpg）转换为完整 URL
+export function getFullUrl(path) {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return BACKEND_BASE_URL + path;
+}

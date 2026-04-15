@@ -1,5 +1,5 @@
 import api from './api.js';
-import { removeToken, isLoggedIn } from './utils.js';
+import { removeToken, isLoggedIn, getFullUrl} from './utils.js';
 
 // 检查登录状态，未登录则跳转
 if (!isLoggedIn()) {
@@ -39,6 +39,14 @@ async function loadUserInfo() {
     try {
         const user = await api.getProfile();
         userInfoSpan.textContent = `${user.nickname || user.username} (${user.username})`;
+        // 显示头像
+        const avatarImg = document.getElementById('avatarImg');
+        if (user.avatar && user.avatar.trim() !== '') {
+            avatarImg.src = getFullUrl(user.avatar);
+            avatarImg.style.display = 'block';
+        } else {
+            avatarImg.style.display = 'none';
+        }
     } catch (err) {
         console.error(err);
         userInfoSpan.textContent = '加载失败';
