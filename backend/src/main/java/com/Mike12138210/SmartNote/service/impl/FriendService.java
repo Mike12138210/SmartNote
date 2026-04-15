@@ -153,9 +153,11 @@ public class FriendService {
         Friend friend1 = new Friend();
         friend1.setUserId(apply.getToUserId());
         friend1.setFriendId(apply.getFromUserId());
+        friend1.setGroupName("我的好友");
         Friend friend2 = new Friend();
         friend2.setUserId(apply.getFromUserId());
         friend2.setFriendId(apply.getToUserId());
+        friend2.setGroupName("我的好友");
         friendMapper.insert(friend1);
         friendMapper.insert(friend2);
     }

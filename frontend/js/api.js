@@ -107,7 +107,7 @@ export default {
     rejectRequest(applyId) {
         return api.put(`/friends/requests/${applyId}/reject`);
     },
-    getFriends(pageNum = 1, pageSize = 10, group = '') {
-        return api.get('/friends', { params: { pageNum, pageSize, group } });
+    getFriends(pageNum = 1, pageSize = 10, groupName = '') {
+        return api.get('/friends', { params: { pageNum, pageSize, groupName } });
     },
 };

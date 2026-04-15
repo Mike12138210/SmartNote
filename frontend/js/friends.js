@@ -13,7 +13,6 @@ const searchResult = document.getElementById('searchResult');
 const pendingListDiv = document.getElementById('pendingList');
 const friendListDiv = document.getElementById('friendList');
 const groupFilter = document.getElementById('groupFilter');
-const filterBtn = document.getElementById('filterBtn');
 const friendPagination = document.getElementById('friendPagination');
 
 let currentFriendPage = 1;
@@ -190,11 +189,13 @@ function renderFriendPagination() {
     });
 }
 
-// 分组筛选
-filterBtn.addEventListener('click', () => {
-    currentGroup = groupFilter.value;
-    loadFriends(1);
-});
+// 分组筛选：下拉框变化时自动触发
+if (groupFilter) {
+    groupFilter.addEventListener('change', () => {
+        currentGroup = groupFilter.value;
+        loadFriends(1);
+    });
+}
 
 // 防XSS
 function escapeHtml(str) {
