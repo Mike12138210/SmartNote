@@ -62,7 +62,6 @@ export default {
     updatePassword(data) {
         return api.put('/users/me/password', data);
     },
-
     // 笔记相关
     getNotes(params) {
         return api.get('/notes', { params });

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人信息 - 智能笔记</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 补充样式 */
+        .profile-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .info-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .section {
+            border-top: 1px solid #ddd;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div class="profile-container">
+    <h2>个人信息</h2>
+    <form id="profileForm">
+        <div class="form-group">
+            <label>用户名（不可修改）</label>
+            <input type="text" id="username" class="form-control" disabled>
+        </div>
+        <div class="form-group">
+            <label>邮箱</label>
+            <input type="email" id="email" class="form-control" disabled>
+            <div class="info-text">邮箱不可直接修改，请联系管理员（暂不支持）</div>
+        </div>
+        <div class="form-group">
+            <label>手机号</label>
+            <input type="tel" id="phone" class="form-control" disabled>
+            <div class="info-text">手机号不可直接修改，请联系管理员（暂不支持）</div>
+        </div>
+        <div class="form-group">
+            <label>昵称</label>
+            <input type="text" id="nickname" class="form-control" placeholder="昵称">
+        </div>
+        <div class="form-group">
+            <label>头像URL</label>
+            <input type="text" id="avatar" class="form-control" placeholder="头像图片地址">
+        </div>
+        <div class="form-group">
+            <label>座右铭</label>
+            <input type="text" id="motto" class="form-control" placeholder="座右铭">
+        </div>
+        <button type="submit" class="btn">保存修改</button>
+    </form>
+
+    <div class="section">
+        <h3>修改密码</h3>
+        <form id="passwordForm">
+            <div class="form-group">
+                <label>原密码</label>
+                <input type="password" id="oldPassword" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>新密码</label>
+                <input type="password" id="newPassword" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>确认新密码</label>
+                <input type="password" id="confirmPassword" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-danger">修改密码</button>
+        </form>
+    </div>
+
+    <a href="index.html" class="back-link">← 返回主页</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="module" src="js/api.js"></script>
+<script type="module" src="js/profile.js"></script>
+</body>
+</html>

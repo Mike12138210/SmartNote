@@ -1,5 +1,5 @@
 import api from './api.js';
-import { getToken, removeToken, isLoggedIn } from './utils.js';
+import { removeToken, isLoggedIn } from './utils.js';
 
 // 检查登录状态，未登录则跳转
 if (!isLoggedIn()) {
@@ -9,6 +9,7 @@ if (!isLoggedIn()) {
 // DOM 元素
 const userInfoSpan = document.getElementById('userInfo');
 const logoutBtn = document.getElementById('logoutBtn');
+const profileBtn = document.getElementById('profileBtn');
 const searchTitle = document.getElementById('searchTitle');
 const searchTag = document.getElementById('searchTag');
 const searchBtn = document.getElementById('searchBtn');
@@ -29,55 +30,22 @@ let currentPage = 1;
 let pageSize = 10;
 let totalPages = 0;
 
-// 加载用户信息
+// 排序变量
+let sortField = null;   // 'noteId' 或 'updateTime'
+let sortOrder = 'asc';  // 'asc' 或 'desc'
+
+// ========== 加载用户信息 ==========
 async function loadUserInfo() {
     try {
         const user = await api.getProfile();
-        userInfoSpan.textContent = `${user.nickname || user.username || '用户'} (${user.username || ''})`;
+        userInfoSpan.textContent = `${user.nickname || user.username} (${user.username})`;
     } catch (err) {
         console.error(err);
         userInfoSpan.textContent = '加载失败';
     }
 }
 
-// 绑定表头排序事件（只绑定一次）
-const sortIdHeader = document.getElementById('sortId');
-const sortTimeHeader = document.getElementById('sortUpdateTime');
-if (sortIdHeader) {
-    sortIdHeader.addEventListener('click', () => {
-        if (sortField === 'noteId') {
-            // 第三次点击恢复默认：如果已经是降序，再点则清除排序
-            if (sortOrder === 'desc') {
-                sortField = null;
-                sortOrder = 'asc';
-            } else {
-                sortOrder = 'desc';
-            }
-        } else {
-            sortField = 'noteId';
-            sortOrder = 'asc';
-        }
-        loadNotes(currentPage); // 重新加载当前页（排序由前端完成，但最好重新请求后端排序，这里沿用前端排序）
-    });
-}
-if (sortTimeHeader) {
-    sortTimeHeader.addEventListener('click', () => {
-        if (sortField === 'updateTime') {
-            if (sortOrder === 'desc') {
-                sortField = null;
-                sortOrder = 'asc';
-            } else {
-                sortOrder = 'desc';
-            }
-        } else {
-            sortField = 'updateTime';
-            sortOrder = 'desc';
-        }
-        loadNotes(currentPage);
-    });
-}
-
-// 加载笔记列表
+// ========== 加载笔记列表 ==========
 async function loadNotes(page = 1) {
     currentPage = page;
     const params = {
@@ -96,47 +64,9 @@ async function loadNotes(page = 1) {
     }
 }
 
-// keypress 事件（按回车搜索）
-searchTitle.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') loadNotes(1);
-});
-searchTag.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') loadNotes(1);
-});
-
-// 防抖自动搜索
-let searchTimer;
-searchTitle.addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => loadNotes(1), 500);
-});
-searchTag.addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => loadNotes(1), 500);
-});
-
-// 排序变量
-let sortField = null;   // 'noteId' 或 'updateTime'
-let sortOrder = 'asc';  // 'asc' 或 'desc'
-// 排序函数
-function sortNotes(notes) {
-    if (!sortField) return notes;
-    return [...notes].sort((a, b) => {
-        let valA = a[sortField];
-        let valB = b[sortField];
-        if (sortField === 'updateTime') {
-            valA = new Date(valA);
-            valB = new Date(valB);
-        }
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
-    });
-}
-
-// 渲染笔记表格
+// ========== 渲染笔记表格 ==========
 function renderNotes(notes) {
-    // 1. 先排序（如果有排序字段）
+    // 前端排序（如果有排序字段）
     let sortedNotes = [...notes];
     if (sortField) {
         sortedNotes.sort((a, b) => {
@@ -159,7 +89,7 @@ function renderNotes(notes) {
 
     let html = '';
     for (const note of sortedNotes) {
-        // 安全解析 aiKeyPoints JSON
+        // 解析 AI 要点（JSON 字符串）
         let keyPointsText = '-';
         if (note.aiKeyPoints) {
             try {
@@ -167,9 +97,10 @@ function renderNotes(notes) {
                 keyPointsText = points.join(', ');
             } catch(e) { /* 忽略解析错误 */ }
         }
+
         html += `<tr>
-            <td>${note.noteId}</td>   <!-- 笔记序号 -->
-            <td><a href="#" class="note-title" data-id="${note.noteId}">${escapeHtml(note.title)}</a></td>
+            <td>${note.noteId}</td>
+            <td><a href="note-detail.html?id=${note.noteId}" class="note-title">${escapeHtml(note.title)}</a></td>
             <td>${escapeHtml(note.tags || '')}</td>
             <td>${escapeHtml(note.aiSummary || '-')}</td>
             <td>${escapeHtml(keyPointsText)}</td>
@@ -178,17 +109,10 @@ function renderNotes(notes) {
                 <button class="btn btn-warning" data-id="${note.noteId}" data-action="edit">编辑</button>
                 <button class="btn btn-danger" data-id="${note.noteId}" data-action="delete">删除</button>
             </td>
-`;
+        </tr>`;
     }
     noteTableBody.innerHTML = html;
-    // 绑定查看事件
-    document.querySelectorAll('.note-title').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const noteId = parseInt(link.dataset.id);
-            window.location.href = `note-detail.html?id=${noteId}`; // 跳转到详情页
-        });
-    });
+
     // 绑定编辑和删除事件
     document.querySelectorAll('[data-action="edit"]').forEach(btn => {
         btn.addEventListener('click', () => editNote(parseInt(btn.dataset.id)));
@@ -198,7 +122,7 @@ function renderNotes(notes) {
     });
 }
 
-// 简单防XSS
+// 防XSS
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -209,7 +133,7 @@ function escapeHtml(str) {
     });
 }
 
-// 渲染分页控件
+// ========== 渲染分页控件 ==========
 function renderPagination() {
     if (totalPages <= 1) {
         paginationDiv.innerHTML = '';
@@ -231,7 +155,7 @@ function renderPagination() {
     });
 }
 
-// 打开模态框（新增/编辑）
+// ========== 打开模态框（新增/编辑） ==========
 function openModal(note = null) {
     if (note) {
         modalTitle.textContent = '编辑笔记';
@@ -249,12 +173,11 @@ function openModal(note = null) {
     modal.style.display = 'flex';
 }
 
-// 关闭模态框
 function closeModal() {
     modal.style.display = 'none';
 }
 
-// 保存笔记（新增或编辑）
+// ========== 保存笔记 ==========
 async function saveNote() {
     const id = noteIdInput.value;
     const title = noteTitleInput.value.trim();
@@ -271,7 +194,6 @@ async function saveNote() {
     const data = { title, content, tags };
     try {
         if (id) {
-            // 编辑：需要传 noteId
             data.noteId = parseInt(id);
             await api.updateNote(data);
             alert('修改成功');
@@ -280,13 +202,13 @@ async function saveNote() {
             alert('新增成功');
         }
         closeModal();
-        loadNotes(currentPage);  // 刷新当前页
+        loadNotes(currentPage);
     } catch (err) {
         alert('操作失败：' + err.message);
     }
 }
 
-// 编辑笔记（从表格点击）
+// ========== 编辑笔记 ==========
 async function editNote(noteId) {
     try {
         const note = await api.getNote(noteId);
@@ -296,7 +218,7 @@ async function editNote(noteId) {
     }
 }
 
-// 删除笔记
+// ========== 删除笔记 ==========
 async function deleteNote(noteId) {
     if (!confirm('确定删除该笔记吗？')) return;
     try {
@@ -308,29 +230,90 @@ async function deleteNote(noteId) {
     }
 }
 
-// 退出登录
+// ========== 退出登录 ==========
 function logout() {
     removeToken();
     window.location.href = 'login.html';
 }
 
-// 事件绑定
+// ========== 表头排序（绑定事件，只执行一次） ==========
+function bindSortEvents() {
+    const sortIdHeader = document.getElementById('sortId');
+    const sortTimeHeader = document.getElementById('sortUpdateTime');
+    if (sortIdHeader) {
+        sortIdHeader.addEventListener('click', () => {
+            if (sortField === 'noteId') {
+                // 第三次点击恢复默认
+                if (sortOrder === 'desc') {
+                    sortField = null;
+                    sortOrder = 'asc';
+                } else {
+                    sortOrder = 'desc';
+                }
+            } else {
+                sortField = 'noteId';
+                sortOrder = 'asc';
+            }
+            loadNotes(currentPage);
+        });
+    }
+    if (sortTimeHeader) {
+        sortTimeHeader.addEventListener('click', () => {
+            if (sortField === 'updateTime') {
+                if (sortOrder === 'desc') {
+                    sortField = null;
+                    sortOrder = 'asc';
+                } else {
+                    sortOrder = 'desc';
+                }
+            } else {
+                sortField = 'updateTime';
+                sortOrder = 'desc';
+            }
+            loadNotes(currentPage);
+        });
+    }
+}
+
+// ========== 事件绑定 ==========
 logoutBtn.addEventListener('click', logout);
+if (profileBtn) {
+    profileBtn.addEventListener('click', () => {
+        window.location.href = 'profile.html';
+    });
+}
 searchBtn.addEventListener('click', () => loadNotes(1));
 addNoteBtn.addEventListener('click', () => openModal());
 saveNoteBtn.addEventListener('click', saveNote);
 cancelModalBtn.addEventListener('click', closeModal);
 
-// 初始加载
-loadUserInfo();
-loadNotes(1);
+// 按回车搜索
+searchTitle.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') loadNotes(1);
+});
+searchTag.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') loadNotes(1);
+});
 
-// 处理从详情页跳转过来的编辑请求
+// 防抖自动搜索
+let searchTimer;
+searchTitle.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadNotes(1), 500);
+});
+searchTag.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadNotes(1), 500);
+});
+
+// 绑定排序事件（注意：需要表头有 id="sortId" 和 id="sortUpdateTime"）
+// 如果表头没有这些 id，可以注释掉，或者修改 HTML 添加
+bindSortEvents();
+
+// ========== 处理从详情页跳转过来的编辑请求 ==========
 const urlParams = new URLSearchParams(window.location.search);
 const editNoteId = urlParams.get('edit');
 if (editNoteId) {
-    // 等待笔记列表加载完成后再打开编辑
-    // 简单方式：延迟执行，或者使用 Promise
     setTimeout(async () => {
         try {
             const note = await api.getNote(editNoteId);
@@ -340,3 +323,7 @@ if (editNoteId) {
         }
     }, 500);
 }
+
+// ========== 初始加载 ==========
+loadUserInfo();
+loadNotes(1);
