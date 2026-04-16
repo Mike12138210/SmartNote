@@ -1,6 +1,7 @@
 package com.Mike12138210.SmartNote.controller;
 
 import com.Mike12138210.SmartNote.dto.FriendApplyRequest;
+import com.Mike12138210.SmartNote.dto.UpdateFriendGroupRequest;
 import com.Mike12138210.SmartNote.service.impl.FriendService;
 import com.Mike12138210.SmartNote.utils.Result;
 import com.Mike12138210.SmartNote.vo.FriendVO;
@@ -69,5 +70,14 @@ public class FriendController {
         Long userId = friendService.getCurrentUserId();
         Page<FriendVO> page = friendService.getFriendList(pageNum,pageSize,groupName,userId);
         return Result.success(page);
+    }
+
+    // 修改好友分组
+    @PutMapping("/{friendId}/group")
+    public Result<?> updateFriendGroup(@PathVariable Long friendId,
+                                       @Valid @RequestBody UpdateFriendGroupRequest request){
+        Long currentUserId = friendService.getCurrentUserId();
+        friendService.updateFriendGroup(currentUserId,friendId,request.getGroupName());
+        return Result.success("分组修改成功",null);
     }
 }

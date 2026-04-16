@@ -7,20 +7,20 @@ import java.time.LocalDateTime;
 @TableName("friend")
 public class Friend {
     // id,user_id,friend_id,group_name,create_time
-    @TableId(type = IdType.AUTO)
-    private Long id;
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long relationId;
     private Long userId;
     private Long friendId;
     private String groupName;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    public Long getId() {
-        return id;
+    public Long getRelationId() {
+        return relationId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setRelationId(Long relationId) {
+        this.relationId = relationId;
     }
 
     public Long getUserId() {

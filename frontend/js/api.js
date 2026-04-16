@@ -109,5 +109,8 @@ export default {
     },
     getFriends(pageNum = 1, pageSize = 10, groupName = '') {
         return api.get('/friends', { params: { pageNum, pageSize, groupName } });
+    },
+    updateFriendGroup(relationId, groupName) {
+        return api.put(`/friends/${relationId}/group`, { groupName });
     }
 };

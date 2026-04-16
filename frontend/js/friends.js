@@ -1,5 +1,5 @@
 import api from './api.js';
-import { isLoggedIn, getToken } from './utils.js';
+import { isLoggedIn } from './utils.js';
 
 // 检查登录状态
 if (!isLoggedIn()) {
@@ -19,6 +19,9 @@ let currentFriendPage = 1;
 let friendPageSize = 10;
 let totalFriendPages = 0;
 let currentGroup = '';
+
+// 预设分组选项（用于下拉框）
+const presetGroups = ['我的好友', '同学', '家人', '同事'];
 
 // ========== 搜索用户 ==========
 searchBtn.addEventListener('click', async () => {
@@ -63,12 +66,10 @@ async function sendFriendRequest(friendId) {
     try {
         const result = await api.sendFriendRequest(friendId);
         if (result) {
-            // 如果返回好友信息（已是好友）
             alert(`你们已经是好友了：${result.nickname || result.username}`);
         } else {
             alert('好友申请已发送');
         }
-        // 刷新待处理列表和好友列表
         loadPendingRequests();
         loadFriends();
     } catch (err) {
@@ -96,7 +97,7 @@ function renderPendingRequests(applies) {
     for (const apply of applies) {
         html += `
             <div class="pending-item">
-                <span>${escapeHtml(apply.fromUser.nickname || apply.fromUser.username)} (${apply.fromUser.username}) 申请添加好友</span>
+                <span>${escapeHtml(apply.username)} (${escapeHtml(apply.username)}) 申请添加好友</span>
                 <div>
                     <button class="btn-sm btn" data-id="${apply.applyId}" data-action="approve">同意</button>
                     <button class="btn-sm btn-danger" data-id="${apply.applyId}" data-action="reject">拒绝</button>
@@ -129,7 +130,6 @@ async function handleRequest(applyId, action) {
             await api.rejectRequest(applyId);
             alert('已拒绝');
         }
-        // 刷新列表
         loadPendingRequests();
         loadFriends();
     } catch (err) {
@@ -151,6 +151,7 @@ async function loadFriends(page = 1) {
     }
 }
 
+// 修改分组：显示下拉框（预设 + 新建）
 function renderFriends(friends) {
     if (!friends.length) {
         friendListDiv.innerHTML = '<div>暂无好友</div>';
@@ -158,14 +159,62 @@ function renderFriends(friends) {
     }
     let html = '';
     for (const friend of friends) {
+        // 构建分组下拉框选项
+        let groupOptions = '';
+        for (const g of presetGroups) {
+            const selected = (friend.groupName === g) ? 'selected' : '';
+            groupOptions += `<option value="${escapeHtml(g)}" ${selected}>${escapeHtml(g)}</option>`;
+        }
+        // 添加一个“新建分组”选项（特殊值）
+        groupOptions += `<option value="__NEW__">+ 新建分组</option>`;
+
         html += `
-            <div class="friend-item">
-                <span>${escapeHtml(friend.nickname || friend.username)} (${friend.username}) - ${friend.groupName}</span>
-                <!-- 可扩展修改分组功能，暂不实现 -->
+            <div class="friend-item" data-relation-id="${friend.relationId}">
+                <div style="flex:2;">
+                    <strong>${escapeHtml(friend.nickname || friend.username)}</strong> (${escapeHtml(friend.username)})
+                </div>
+                <div style="flex:1;">
+                    <select class="group-select" data-relation-id="${friend.relationId}" data-current-group="${escapeHtml(friend.groupName)}">
+                        ${groupOptions}
+                    </select>
+                </div>
+                <div>
+                    <button class="btn-sm btn update-group-btn" data-relation-id="${friend.relationId}">更新分组</button>
+                </div>
             </div>
         `;
     }
     friendListDiv.innerHTML = html;
+
+    // 绑定“更新分组”按钮事件
+    document.querySelectorAll('.update-group-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const relationId = parseInt(btn.dataset.relationId);
+            const select = document.querySelector(`.group-select[data-relation-id="${relationId}"]`);
+            let newGroup = select.value;
+            if (newGroup === '__NEW__') {
+                // 弹出输入框让用户输入新分组名
+                newGroup = prompt('请输入新分组名称：');
+                if (!newGroup || newGroup.trim() === '') {
+                    alert('分组名不能为空');
+                    return;
+                }
+                // 可选：将新分组添加到预设列表中（下次直接可选）
+                if (!presetGroups.includes(newGroup)) {
+                    presetGroups.push(newGroup);
+                }
+            }
+            // 调用后端接口修改分组
+            try {
+                await api.updateFriendGroup(relationId, newGroup);
+                alert('分组修改成功');
+                // 重新加载列表以显示新分组
+                loadFriends(currentFriendPage);
+            } catch (err) {
+                alert('修改失败：' + err.message);
+            }
+        });
+    });
 }
 
 function renderFriendPagination() {

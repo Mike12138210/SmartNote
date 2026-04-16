@@ -1,6 +1,7 @@
 package com.Mike12138210.SmartNote.vo;
 
 public class FriendVO {
+    private Long relationId;
     private Long friendId;
     private String username;
     private String nickname;
@@ -11,13 +12,22 @@ public class FriendVO {
     public FriendVO() {
     }
 
-    public FriendVO(Long friendId, String username, String nickname, String avatar, String motto, String groupName) {
+    public FriendVO(Long relationId,Long friendId, String username, String nickname, String avatar, String motto, String groupName) {
+        this.relationId = relationId;
         this.friendId = friendId;
         this.username = username;
         this.nickname = nickname;
         this.avatar = avatar;
         this.motto = motto;
         this.groupName = groupName;
+    }
+
+    public Long getRelationId() {
+        return relationId;
+    }
+
+    public void setRelationId(Long relationId) {
+        this.relationId = relationId;
     }
 
     public Long getFriendId() {

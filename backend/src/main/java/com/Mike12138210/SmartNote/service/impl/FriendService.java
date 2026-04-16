@@ -218,7 +218,9 @@ public class FriendService {
             User user = userMap.get(friend.getFriendId());
             if(user != null && user.getDeleted() == 0){
                 FriendVO vo = new FriendVO();
+                vo.setRelationId(friend.getRelationId());
                 vo.setFriendId(user.getUid());
+                vo.setUsername(user.getUsername());
                 vo.setNickname(user.getNickname() != null ? user.getNickname() : user.getUsername());
                 vo.setAvatar(user.getAvatar());
                 vo.setMotto(user.getMotto());
@@ -231,5 +233,23 @@ public class FriendService {
         Page<FriendVO> resultPage = new Page<>(friendPage.getCurrent(),friendPage.getSize(),friendPage.getTotal());
         resultPage.setRecords(voList);
         return resultPage;
+    }
+
+    // 修改好友分组
+    public void updateFriendGroup(Long currentUserId,Long relationId,String groupName){
+        try {
+            Friend friend = friendMapper.selectById(relationId);
+            if(friend == null){
+                throw new RuntimeException("对不起，好友关系不存在");
+            }
+            if(!friend.getUserId().equals(currentUserId)){
+                throw new RuntimeException("对不起，您无权修改改好友分组");
+            }
+            friend.setGroupName(groupName);
+            friendMapper.updateById(friend);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("修改分组失败" + e.getMessage());
+        }
     }
 }
