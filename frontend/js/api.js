@@ -90,6 +90,15 @@ export default {
     updateNotePermission(noteId, permission) {
         return api.put(`/notes/${noteId}/permission`,{ permission});
     },
+    getRecycleBin() {
+        return api.get('/notes/recycle');
+    },
+    restoreNote(noteId) {
+        return api.put(`/notes/recycle/${noteId}/restore`);
+    },
+    permanentDeleteNote(noteId) {
+        return api.delete(`/notes/recycle/${noteId}/permanent`);
+    },
 
     // 好友相关
     searchUsers(keyword) {

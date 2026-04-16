@@ -25,6 +25,7 @@ const noteTagsInput = document.getElementById('noteTags');
 const saveNoteBtn = document.getElementById('saveNoteBtn');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
 const friendsBtn = document.getElementById('friendsBtn');
+const recycleBtn = document.getElementById('recycleBtn');
 
 // 当前分页参数
 let currentPage = 1;
@@ -93,7 +94,6 @@ function renderNotes(notes) {
     }
 
     if (!sortedNotes.length) {
-        // 修正：表格现在有 8 列（序号、标题、标签、AI总结、AI要点、修改时间、权限、操作）
         noteTableBody.innerHTML = '<tr><td colspan="8">暂无笔记</td></tr>';
         return;
     }
@@ -333,6 +333,11 @@ if (profileBtn) {
 if (friendsBtn) {
     friendsBtn.addEventListener('click', () => {
         window.location.href = 'friends.html';
+    });
+}
+if (recycleBtn) {
+    recycleBtn.addEventListener('click', () => {
+        window.location.href = 'recycle.html';
     });
 }
 searchBtn.addEventListener('click', () => loadNotes(1));

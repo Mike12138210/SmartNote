@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 @Component
 public class JwtUtil {
-    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
+    public static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
     @Value("${jwt.secret}")
     private String secretBase64;

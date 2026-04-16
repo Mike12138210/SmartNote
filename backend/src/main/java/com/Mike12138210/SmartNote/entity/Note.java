@@ -20,8 +20,9 @@ public class Note {
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT, update = "now()")
     private LocalDateTime updateTime;
-    @TableLogic
-    private Integer deleted;
+
+    private Integer deleted; // 0 - 未删除 ， 1 - 已删除
+    private LocalDateTime deleteTime;
 
     public Long getNoteId() {return noteId;}
 
@@ -66,4 +67,8 @@ public class Note {
     public Integer getDeleted() {return deleted;}
 
     public void setDeleted(Integer deleted) {this.deleted = deleted;}
+
+    public LocalDateTime getDeleteTime() {return deleteTime;}
+
+    public void setDeleteTime(LocalDateTime deleteTime) {this.deleteTime = deleteTime;}
 }

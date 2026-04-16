@@ -6,12 +6,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.Map;
 
 // 启动类，SpringBoot项目的入口
 @MapperScan("com.Mike12138210.SmartNote.mapper")
 @SpringBootApplication
+@EnableScheduling
 public class SmartNoteApplication {
     public static void main(String[] args) {
         SpringApplication.run(SmartNoteApplication.class, args);

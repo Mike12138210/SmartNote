@@ -8,9 +8,13 @@ import com.Mike12138210.SmartNote.mapper.NoteMapper;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
 import com.Mike12138210.SmartNote.vo.NoteAnalysisVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -20,6 +24,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class NoteService {
+    public static final Logger log = LoggerFactory.getLogger(NoteService.class);
+
     @Autowired
     private NoteMapper noteMapper;
     @Autowired
@@ -49,7 +55,8 @@ public class NoteService {
         Page<Note> page = new Page<>(pageNum,pageSize);
         LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Note::getUserId,userId)
-                .orderByDesc(Note::getUpdateTime); // 按更新时间排序
+                .eq(Note::getDeleted,0)
+                .orderByDesc(Note::getUpdateTime); // 按更新时间倒序排序
 
         if(StringUtils.hasText(title)){
             wrapper.like(Note::getTitle,title); //包含该title即可
@@ -66,7 +73,11 @@ public class NoteService {
         Long userId = ThreadLocalUtil.get();
         if(userId == null){throw new RuntimeException("用户未登录，请稍后重试");}
 
-        Note note = noteMapper.selectById(noteId);
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getNoteId,noteId)
+                .eq(Note::getDeleted,0);
+        Note note = noteMapper.selectOne(wrapper);
+
         if (note == null) {throw new RuntimeException("该笔记不存在或已被删除，请重试");}
 
         if(!note.getUserId().equals(userId)){
@@ -91,7 +102,11 @@ public class NoteService {
 
     // 查询公开笔记
     public Note getPublicNote(Long noteId){
-        Note note = noteMapper.selectById(noteId);
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getNoteId,noteId)
+                .eq(Note::getDeleted,0);
+        Note note = noteMapper.selectOne(wrapper);
+
         if (note == null || note.getDeleted() == 1) {
             throw new RuntimeException("该笔记不存在或已被删除，请重试");
         }
@@ -127,7 +142,8 @@ public class NoteService {
 
         // 根据ID批量查询笔记
         LambdaQueryWrapper<Note> noteWrapper = new LambdaQueryWrapper<>();
-        noteWrapper.in(Note::getNoteId,noteIds);
+        noteWrapper.in(Note::getNoteId,noteIds)
+                .eq(Note::getDeleted,0);
         List<Note> notes = noteMapper.selectList(noteWrapper);
 
         //将笔记列表转换成Map，方便按ID快速查找
@@ -156,7 +172,11 @@ public class NoteService {
     public Note patchNote(NotePatchRequest request){
         Long currentUserId = ThreadLocalUtil.get();
 
-        Note note = noteMapper.selectById(request.getNoteId());
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getNoteId,request.getNoteId())
+                .eq(Note::getDeleted,0);
+        Note note = noteMapper.selectOne(wrapper);
+
         if(note == null){
             throw new RuntimeException("笔记不存在，请稍后重试");
         }
@@ -185,7 +205,11 @@ public class NoteService {
             throw new RuntimeException("用户未登录，请稍后重试");
         }
 
-        Note note = noteMapper.selectById(noteId);
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getNoteId, noteId)
+                .eq(Note::getDeleted, 0);
+        Note note = noteMapper.selectOne(wrapper);
+
         if(note == null){
             throw new RuntimeException("笔记不存在或已被删除，请稍后重试");
         }
@@ -193,10 +217,9 @@ public class NoteService {
             throw new RuntimeException("对不起，您无权删除此笔记");
         }
 
-        int row = noteMapper.deleteById(noteId);
-        if(row == 0){
-            throw new RuntimeException("删除失败，请重试");
-        }
+        note.setDeleted(1);
+        note.setDeleteTime(LocalDateTime.now());
+        noteMapper.updateById(note);
     }
 
     // 修改笔记权限
@@ -206,7 +229,10 @@ public class NoteService {
             throw new RuntimeException("用户未登录，请稍后重试");
         }
 
-        Note note = noteMapper.selectById(noteId);
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getNoteId, noteId)
+                .eq(Note::getDeleted, 0);
+        Note note = noteMapper.selectOne(wrapper);
         if(note == null){
             throw new RuntimeException("笔记不存在，请稍后重试");
         }
@@ -227,7 +253,10 @@ public class NoteService {
             throw new RuntimeException("用户未登录，请稍后重试");
         }
 
-        Note note = noteMapper.selectById(noteId);
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getNoteId, noteId)
+                .eq(Note::getDeleted, 0);
+        Note note = noteMapper.selectOne(wrapper);
         if(note == null){
             throw new RuntimeException("对不起，该笔记不存在");
         }
@@ -262,5 +291,64 @@ public class NoteService {
         note.setAiKeyPoints(keyPointsJson);
         noteMapper.updateById(note);
         return new NoteAnalysisVO(summary,keyPoints);
+    }
+
+    // 查看回收站列表
+    public List<Note> getRecycleBin(Long userId){
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getUserId,userId)
+                .eq(Note::getDeleted,1)
+                .orderByDesc(Note::getDeleteTime); // 按删除时间倒序
+        return noteMapper.selectList(wrapper);
+    }
+
+    // 还原回收站中的笔记
+    public void restoreNote(Long noteId,Long userId){
+        Note note = noteMapper.selectById(noteId);
+        if(note == null){
+            throw new RuntimeException("对不起，该笔记不存在");
+        }
+        if(!note.getUserId().equals(userId)){
+            throw new RuntimeException("对不起，您无权进行此操作");
+        }
+        if(note.getDeleted() != 1){
+            throw new RuntimeException("对不起，该笔记不在回收站中");
+        }
+
+        // 使用 LambdaUpdateWrapper 将 deleted 改回 0，清空 delete_time
+        LambdaUpdateWrapper<Note> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Note::getNoteId, noteId)
+                .set(Note::getDeleted, 0)
+                .set(Note::getDeleteTime, null);
+        noteMapper.update(null, updateWrapper);
+    }
+
+    // 定时任务
+    @Scheduled(fixedDelay = 60000)  // 每分钟执行一次
+    public void autoClearRecycleBin(){
+        LocalDateTime expireTime = LocalDateTime.now().minusMinutes(5);
+        LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Note::getDeleted,1)
+                .le(Note::getDeleteTime,expireTime);
+        List<Note> expireNotes = noteMapper.selectList(wrapper);
+        for(Note note : expireNotes){
+            noteMapper.deleteById(note.getNoteId());
+            log.info("自动清空回收站笔记：{} （ID={}）",note.getTitle(),note.getNoteId());
+        }
+    }
+
+    // 彻底删除回收站笔记
+    public void permanentDeleteNote(Long noteId,Long userId){
+        Note note = noteMapper.selectById(noteId);
+        if(note == null){
+            throw new RuntimeException("对不起，该笔记不存在");
+        }
+        if(!note.getUserId().equals(userId)){
+            throw new RuntimeException("对不起，您无权进行此操作");
+        }
+        if(note.getDeleted() != 1){
+            throw new RuntimeException("对不起，该笔记不在回收站中");
+        }
+        noteMapper.deleteById(noteId);
     }
 }

@@ -5,6 +5,7 @@ import com.Mike12138210.SmartNote.dto.NotePermissionRequest;
 import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.service.impl.NoteService;
 import com.Mike12138210.SmartNote.utils.Result;
+import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
 import com.Mike12138210.SmartNote.vo.NoteAnalysisVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,5 +84,37 @@ public class NoteController {
                                               @RequestParam(required = false,defaultValue = "false") boolean force){
         NoteAnalysisVO result = noteService.analyzeNote(noteId,force);
         return Result.success("AI分析完成，已保存摘要和要点",result);
+    }
+
+    // 查看回收站
+    @GetMapping("/recycle")
+    public Result<List<Note>> getRecycleBin() {
+        Long userId = ThreadLocalUtil.get();
+        if (userId == null) {
+            throw new RuntimeException("未登录");
+        }
+        List<Note> recycleNotes = noteService.getRecycleBin(userId);
+        return Result.success(recycleNotes);
+    }
+
+    // 还原回收站中的笔记
+    @PutMapping("/recycle/{noteId}/restore")
+    public Result<?> restoreNotes(@PathVariable Long noteId){
+        Long userId = ThreadLocalUtil.get();
+        if(userId == null){
+            throw new RuntimeException("未登录");
+        }
+        noteService.restoreNote(noteId,userId);
+        return Result.success("还原成功",null);
+    }
+    // 彻底删除
+    @DeleteMapping("/recycle/{noteId}/permanent")
+    public Result<?> permanentDeleteNote(@PathVariable Long noteId){
+        Long userId = ThreadLocalUtil.get();
+        if(userId == null){
+            throw new RuntimeException("未登录");
+        }
+        noteService.permanentDeleteNote(noteId,userId);
+        return Result.success("该笔记已被彻底删除", null);
     }
 }
