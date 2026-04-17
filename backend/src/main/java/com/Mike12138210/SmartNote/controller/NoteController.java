@@ -6,6 +6,7 @@ import com.Mike12138210.SmartNote.entity.Note;
 import com.Mike12138210.SmartNote.service.impl.NoteService;
 import com.Mike12138210.SmartNote.utils.Result;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import com.Mike12138210.SmartNote.vo.HistoryVO;
 import com.Mike12138210.SmartNote.vo.NoteAnalysisVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +52,9 @@ public class NoteController {
 
     // 查看浏览记录
     @GetMapping("/history/recent")
-    public Result<List<Note>> getRecentHistory(@RequestParam(defaultValue = "10")int limit){
-        List<Note> recentNote = noteService.getRecentHistory(limit);
-        return Result.success(recentNote);
+    public Result<List<HistoryVO>> getRecentHistory(@RequestParam(defaultValue = "10")int limit){
+        List<HistoryVO> recentNotes = noteService.getRecentHistory(limit);
+        return Result.success(recentNotes);
     }
 
     // 编辑笔记

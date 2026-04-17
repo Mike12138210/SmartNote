@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能笔记 - 浏览历史</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background: #f2f2f2;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .empty {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .limit-select {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>浏览历史</h2>
+    <div class="limit-select">
+        <label>显示条数：</label>
+        <select id="limitSelect">
+            <option value="5">5条</option>
+            <option value="10" selected>10条</option>
+            <option value="20">20条</option>
+            <option value="50">50条</option>
+        </select>
+    </div>
+    <div id="historyList">
+        <div class="empty">加载中...</div>
+    </div>
+    <a href="index.html" class="back-link">← 返回主页</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="module" src="js/api.js"></script>
+<script type="module" src="js/history.js"></script>
+</body>
+</html>

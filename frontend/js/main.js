@@ -26,6 +26,7 @@ const saveNoteBtn = document.getElementById('saveNoteBtn');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
 const friendsBtn = document.getElementById('friendsBtn');
 const recycleBtn = document.getElementById('recycleBtn');
+const historyBtn = document.getElementById('historyBtn');   // 新增
 
 // 当前分页参数
 let currentPage = 1;
@@ -69,7 +70,7 @@ async function loadNotes(page = 1) {
         renderNotes(data.records);
         totalPages = data.pages;
         renderPagination();
-        updateSortIcons();   // 新增：更新表头图标
+        updateSortIcons();
     } catch (err) {
         alert('加载笔记失败：' + err.message);
     }
@@ -77,7 +78,6 @@ async function loadNotes(page = 1) {
 
 // ========== 渲染笔记表格 ==========
 function renderNotes(notes) {
-    // 前端排序（如果有排序字段）
     let sortedNotes = [...notes];
     if (sortField) {
         sortedNotes.sort((a, b) => {
@@ -94,19 +94,18 @@ function renderNotes(notes) {
     }
 
     if (!sortedNotes.length) {
-        noteTableBody.innerHTML = '<tr><td colspan="8">暂无笔记</td></tr>';
+        noteTableBody.innerHTML = '<td><td colspan="8">暂无笔记</td></tr>';
         return;
     }
 
     let html = '';
     for (const note of sortedNotes) {
-        // 解析 AI 要点（JSON 字符串）
         let keyPointsText = '-';
         if (note.aiKeyPoints) {
             try {
                 const points = JSON.parse(note.aiKeyPoints);
                 keyPointsText = points.join(', ');
-            } catch(e) { /* 忽略解析错误 */ }
+            } catch(e) {}
         }
 
         html += `<tr>
@@ -122,25 +121,23 @@ function renderNotes(notes) {
                     <option value="仅好友可见" ${note.permission === '仅好友可见' ? 'selected' : ''}>仅好友可见</option>
                     <option value="所有人可见" ${note.permission === '所有人可见' ? 'selected' : ''}>所有人可见</option>
                 </select>
-            </td>
+             </td>
             <td>
                 <button class="btn btn-warning" data-id="${note.noteId}" data-action="edit">编辑</button>
                 <button class="btn btn-danger" data-id="${note.noteId}" data-action="delete">删除</button>
-            </td>
+             </td>
         </tr>`;
     }
     noteTableBody.innerHTML = html;
 
-    // 绑定编辑和删除事件
     document.querySelectorAll('[data-action="edit"]').forEach(btn => {
         btn.addEventListener('click', () => editNote(parseInt(btn.dataset.id)));
     });
     document.querySelectorAll('[data-action="delete"]').forEach(btn => {
         btn.addEventListener('click', () => deleteNote(parseInt(btn.dataset.id)));
     });
-    // 绑定权限修改事件
     document.querySelectorAll('.permission-select').forEach(select => {
-        select.addEventListener('change', async (e) => {
+        select.addEventListener('change', async () => {
             const noteId = parseInt(select.dataset.id);
             const newPermission = select.value;
             try {
@@ -155,7 +152,6 @@ function renderNotes(notes) {
     });
 }
 
-// 防XSS
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -166,7 +162,6 @@ function escapeHtml(str) {
     });
 }
 
-// ========== 渲染分页控件 ==========
 function renderPagination() {
     if (totalPages <= 1) {
         paginationDiv.innerHTML = '';
@@ -188,7 +183,6 @@ function renderPagination() {
     });
 }
 
-// ========== 打开模态框（新增/编辑） ==========
 function openModal(note = null) {
     if (note) {
         modalTitle.textContent = '编辑笔记';
@@ -210,7 +204,6 @@ function closeModal() {
     modal.style.display = 'none';
 }
 
-// ========== 保存笔记 ==========
 async function saveNote() {
     const id = noteIdInput.value;
     const title = noteTitleInput.value.trim();
@@ -241,7 +234,6 @@ async function saveNote() {
     }
 }
 
-// ========== 编辑笔记 ==========
 async function editNote(noteId) {
     try {
         const note = await api.getNote(noteId);
@@ -251,7 +243,6 @@ async function editNote(noteId) {
     }
 }
 
-// ========== 删除笔记 ==========
 async function deleteNote(noteId) {
     if (!confirm('确定删除该笔记吗？')) return;
     try {
@@ -263,43 +254,31 @@ async function deleteNote(noteId) {
     }
 }
 
-// ========== 退出登录 ==========
 function logout() {
     removeToken();
     window.location.href = 'login.html';
 }
 
-// 更新表头排序图标
 function updateSortIcons() {
     const idIcon = document.querySelector('#sortId i');
     const timeIcon = document.querySelector('#sortUpdateTime i');
-    // 重置为默认双向箭头
     if (idIcon) idIcon.className = 'fas fa-sort';
     if (timeIcon) timeIcon.className = 'fas fa-sort';
     if (sortField === 'noteId') {
-        if (sortOrder === 'asc') {
-            idIcon.className = 'fas fa-sort-up';
-        } else if (sortOrder === 'desc') {
-            idIcon.className = 'fas fa-sort-down';
-        }
+        if (sortOrder === 'asc') idIcon.className = 'fas fa-sort-up';
+        else if (sortOrder === 'desc') idIcon.className = 'fas fa-sort-down';
     } else if (sortField === 'updateTime') {
-        if (sortOrder === 'asc') {
-            timeIcon.className = 'fas fa-sort-up';
-        } else if (sortOrder === 'desc') {
-            timeIcon.className = 'fas fa-sort-down';
-        }
+        if (sortOrder === 'asc') timeIcon.className = 'fas fa-sort-up';
+        else if (sortOrder === 'desc') timeIcon.className = 'fas fa-sort-down';
     }
 }
 
-// ========== 表头排序（绑定事件，只执行一次） ==========
 function bindSortEvents() {
     const sortIdHeader = document.getElementById('sortId');
     const sortTimeHeader = document.getElementById('sortUpdateTime');
-
     if (sortIdHeader) {
         sortIdHeader.addEventListener('click', () => {
             if (sortField === 'noteId') {
-                // 切换顺序
                 sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
             } else {
                 sortField = 'noteId';
@@ -308,44 +287,37 @@ function bindSortEvents() {
             loadNotes(currentPage);
         });
     }
-
     if (sortTimeHeader) {
         sortTimeHeader.addEventListener('click', () => {
             if (sortField === 'updateTime') {
-                // 切换顺序
                 sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
             } else {
                 sortField = 'updateTime';
-                sortOrder = 'asc';   // 初始点击改为升序（最早在前）
+                sortOrder = 'asc';
             }
             loadNotes(currentPage);
         });
     }
 }
 
-// ========== 事件绑定 ==========
 logoutBtn.addEventListener('click', logout);
 if (profileBtn) {
-    profileBtn.addEventListener('click', () => {
-        window.location.href = 'profile.html';
-    });
+    profileBtn.addEventListener('click', () => window.location.href = 'profile.html');
 }
 if (friendsBtn) {
-    friendsBtn.addEventListener('click', () => {
-        window.location.href = 'friends.html';
-    });
+    friendsBtn.addEventListener('click', () => window.location.href = 'friends.html');
+}
+if (historyBtn) {
+    historyBtn.addEventListener('click', () => window.location.href = 'history.html');
 }
 if (recycleBtn) {
-    recycleBtn.addEventListener('click', () => {
-        window.location.href = 'recycle.html';
-    });
+    recycleBtn.addEventListener('click', () => window.location.href = 'recycle.html');
 }
 searchBtn.addEventListener('click', () => loadNotes(1));
 addNoteBtn.addEventListener('click', () => openModal());
 saveNoteBtn.addEventListener('click', saveNote);
 cancelModalBtn.addEventListener('click', closeModal);
 
-// 按回车搜索
 searchTitle.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') loadNotes(1);
 });
@@ -353,7 +325,6 @@ searchTag.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') loadNotes(1);
 });
 
-// 防抖自动搜索
 let searchTimer;
 searchTitle.addEventListener('input', () => {
     clearTimeout(searchTimer);
@@ -364,10 +335,8 @@ searchTag.addEventListener('input', () => {
     searchTimer = setTimeout(() => loadNotes(1), 500);
 });
 
-// 绑定排序事件（需要表头有 id="sortId" 和 id="sortUpdateTime"）
 bindSortEvents();
 
-// ========== 处理从详情页跳转过来的编辑请求 ==========
 const urlParams = new URLSearchParams(window.location.search);
 const editNoteId = urlParams.get('edit');
 if (editNoteId) {
@@ -381,6 +350,5 @@ if (editNoteId) {
     }, 500);
 }
 
-// ========== 初始加载 ==========
 loadUserInfo();
 loadNotes(1);

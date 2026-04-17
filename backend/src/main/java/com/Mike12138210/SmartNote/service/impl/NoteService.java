@@ -6,6 +6,7 @@ import com.Mike12138210.SmartNote.entity.NoteHistory;
 import com.Mike12138210.SmartNote.mapper.NoteHistoryMapper;
 import com.Mike12138210.SmartNote.mapper.NoteMapper;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
+import com.Mike12138210.SmartNote.vo.HistoryVO;
 import com.Mike12138210.SmartNote.vo.NoteAnalysisVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -117,7 +118,7 @@ public class NoteService {
     }
 
     // 查看浏览历史
-    public List<Note> getRecentHistory(int limit) {
+    public List<HistoryVO> getRecentHistory(int limit) {
         Long currentUserId = ThreadLocalUtil.get();
         if(currentUserId == null){
             throw new RuntimeException("用户未登录，请稍后重试");
@@ -151,17 +152,11 @@ public class NoteService {
                 .collect(Collectors.toMap(Note::getNoteId,note -> note));
 
         // 根据笔记ID构造最终返回的笔记列表
-        List<Note> result = new ArrayList<>();
+        List<HistoryVO> result = new ArrayList<>();
         for(NoteHistory history : histories){
             Note note = noteMap.get(history.getNoteId());
-            if(note == null){ // 笔记可能已被删除
-                continue;
-            }
-            if(note.getDeleted() != null && note.getDeleted() == 1){
-                continue;
-            }
-            if(note.getUserId().equals(currentUserId) || "所有人可见" .equals(note.getPermission())){ // 权限过滤
-                result.add(note);
+            if(note != null){
+                result.add(new HistoryVO(note, history.getViewTime()));
             }
         }
 
