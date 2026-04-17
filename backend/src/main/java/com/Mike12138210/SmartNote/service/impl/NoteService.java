@@ -8,6 +8,7 @@ import com.Mike12138210.SmartNote.mapper.NoteMapper;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
 import com.Mike12138210.SmartNote.vo.HistoryVO;
 import com.Mike12138210.SmartNote.vo.NoteAnalysisVO;
+import com.Mike12138210.SmartNote.vo.PublicNoteVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,6 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -101,8 +103,8 @@ public class NoteService {
         return note;
     }
 
-    // 查询公开笔记
-    public Note getPublicNote(Long noteId){
+    // 查看“所有人可见”笔记
+    public PublicNoteVO getPublicNote(Long noteId){
         LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Note::getNoteId,noteId)
                 .eq(Note::getDeleted,0);
@@ -114,7 +116,7 @@ public class NoteService {
         if(!"所有人可见".equals(note.getPermission())){
             throw new RuntimeException("该笔记未公开，无法访问");
         }
-        return note;
+        return new PublicNoteVO(note);
     }
 
     // 查看浏览历史

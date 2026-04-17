@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公开笔记 - 智能笔记</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .note-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .note-meta {
+            color: #666;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .note-content {
+            margin: 20px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="publicNote">
+    <div class="loading">加载中...</div>
+</div>
+
+<script>
+    // 获取 URL 参数中的笔记 ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const noteId = urlParams.get('id');
+    if (!noteId) {
+        document.getElementById('publicNote').innerHTML = '<div class="error">无效的笔记ID</div>';
+    } else {
+        loadPublicNote(noteId);
+    }
+
+    async function loadPublicNote(noteId) {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/notes/public/${noteId}`);
+            if (response.data.code === 200) {
+                const note = response.data.data;
+                renderPublicNote(note);
+            } else {
+                throw new Error(response.data.message);
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message;
+            document.getElementById('publicNote').innerHTML = `<div class="error">加载失败：${msg}</div>`;
+        }
+    }
+
+    function renderPublicNote(note) {
+        const html = `
+            <div class="note-title">${escapeHtml(note.title)}</div>
+            <div class="note-meta">
+                标签：${escapeHtml(note.tags || '无')} &nbsp;|&nbsp;
+                权限：${escapeHtml(note.permission)}
+            </div>
+            <div class="note-content markdown-body">${marked.parse(note.content)}</div>
+            <a href="index.html" class="back-link">← 返回主页</a>
+        `;
+        document.getElementById('publicNote').innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+</script>
+</body>
+</html>

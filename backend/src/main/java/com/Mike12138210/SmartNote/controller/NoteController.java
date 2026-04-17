@@ -8,6 +8,7 @@ import com.Mike12138210.SmartNote.utils.Result;
 import com.Mike12138210.SmartNote.utils.ThreadLocalUtil;
 import com.Mike12138210.SmartNote.vo.HistoryVO;
 import com.Mike12138210.SmartNote.vo.NoteAnalysisVO;
+import com.Mike12138210.SmartNote.vo.PublicNoteVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +39,9 @@ public class NoteController {
 
     // 查看“所有人可见”笔记
     @GetMapping("/public/{noteId}")
-    public Result<Note> getPublicNote(@PathVariable Long noteId){
-        Note note = noteService.getPublicNote(noteId);
-        return Result.success(note);
+    public Result<PublicNoteVO> getPublicNote(@PathVariable Long noteId){
+        PublicNoteVO publicNote = noteService.getPublicNote(noteId);
+        return Result.success(publicNote);
     }
 
     // 查看笔记

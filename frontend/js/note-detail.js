@@ -87,7 +87,7 @@ function renderNoteDetail(note) {
                 </div>
                 <div id="publicLinkArea" style="margin-top: 10px; ${note.permission !== '所有人可见' ? 'display: none;' : ''}">
                     <label>公开链接：</label>
-                    <input type="text" id="publicLink" readonly style="width: 70%;" value="${note.permission === '所有人可见' ? `http://localhost:8080/api/notes/public/${note.noteId}` : ''}">
+                    <input type="text" id="publicLink" readonly style="width: 70%;" value="${note.permission === '所有人可见' ? `${window.location.origin}/public-note.html?id=${note.noteId}` : ''}">
                     <button id="copyLinkBtn" class="btn">复制链接</button>
                 </div>
             </div>
@@ -169,7 +169,7 @@ function renderNoteDetail(note) {
             if (permissionSelect.value === '所有人可见') {
                 publicLinkArea.style.display = 'block';
                 const linkInput = document.getElementById('publicLink');
-                if (linkInput) linkInput.value = `http://localhost:8080/api/notes/public/${noteId}`;
+                if (linkInput) linkInput.value = `${window.location.origin}/public-note.html?id=${noteId}`;
             } else {
                 publicLinkArea.style.display = 'none';
             }
