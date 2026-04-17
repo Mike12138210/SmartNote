@@ -29,6 +29,27 @@ async function loadNoteDetail() {
     }
 }
 
+// 导出为 Markdown 文件
+function exportAsMarkdown(note) {
+    let content = `# ${note.title}\n\n`;
+    if (note.tags) {
+        content += `> 标签：${note.tags}\n\n`;
+    }
+    content += `${note.content}\n\n`;
+    content += `---\n*导出时间：${new Date().toLocaleString()}*`;
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    // 过滤文件名中的非法字符
+    const safeTitle = note.title.replace(/[\\/:*?"<>|]/g, '');
+    link.download = `${safeTitle}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
 // 渲染笔记详情（包含只读视图和编辑视图）
 function renderNoteDetail(note) {
     const container = document.getElementById('noteDetail');
@@ -72,6 +93,7 @@ function renderNoteDetail(note) {
                 <div class="action-buttons">
                     <button id="analyzeBtn" class="btn">🤖 AI智能分析（生成/刷新）</button>
                     <button id="editNoteBtn" class="btn btn-warning">✏️ 编辑</button>
+                    <button id="exportMarkdownBtn" class="btn btn-secondary">📥 导出为Markdown</button>
                 </div>
             </div>
             <div class="share-section">
@@ -121,6 +143,7 @@ function renderNoteDetail(note) {
     const updatePermissionBtn = document.getElementById('updatePermissionBtn');
     const publicLinkArea = document.getElementById('publicLinkArea');
     const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const exportBtn = document.getElementById('exportMarkdownBtn');
 
     // 编辑模式切换
     if (editNoteBtn) {
@@ -131,7 +154,6 @@ function renderNoteDetail(note) {
     }
     if (cancelEditBtn) {
         cancelEditBtn.addEventListener('click', () => {
-            // 恢复原有内容
             editTitle.value = currentNote.title;
             editTags.value = currentNote.tags || '';
             editContent.value = currentNote.content;
@@ -155,7 +177,6 @@ function renderNoteDetail(note) {
             try {
                 await api.updateNotePermission(noteId, newPermission);
                 alert('权限修改成功');
-                // 重新加载笔记详情
                 await loadNoteDetail();
             } catch (err) {
                 alert('修改失败：' + err.message);
@@ -163,7 +184,7 @@ function renderNoteDetail(note) {
         });
     }
 
-    // 公开链接区域显示/隐藏（根据权限下拉变化）
+    // 公开链接区域显示/隐藏
     if (permissionSelect) {
         permissionSelect.addEventListener('change', () => {
             if (permissionSelect.value === '所有人可见') {
@@ -187,6 +208,13 @@ function renderNoteDetail(note) {
             }
         });
     }
+
+    // 导出为Markdown
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            exportAsMarkdown(currentNote);
+        });
+    }
 }
 
 // 保存编辑
@@ -206,7 +234,7 @@ async function saveNoteEdit() {
             tags: newTags
         });
         alert('保存成功');
-        await loadNoteDetail(); // 重新加载
+        await loadNoteDetail();
     } catch (err) {
         alert('保存失败：' + err.message);
     }
@@ -220,7 +248,7 @@ async function analyzeNote(force = true) {
     analyzeBtn.innerText = '分析中...';
     analyzeBtn.disabled = true;
     try {
-        const result = await api.analyzeNote(noteId, force);
+        await api.analyzeNote(noteId, force);
         await loadNoteDetail();
         alert('AI 分析完成，已更新摘要和要点');
     } catch (err) {
